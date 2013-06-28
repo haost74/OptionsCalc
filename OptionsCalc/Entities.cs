@@ -10,10 +10,10 @@ namespace OptionsCalc
     {
         
         [SerializableAttribute]
-        public static enum OptionType { Call = 1, Put };
+        public enum OptionType { Call = 0, Put };
 
         [SerializableAttribute]
-        public static enum InstrumentType { Futures, Index, Bond, Option, Stock}
+        public enum InstrumentType { Futures=0, Index, Bond, Option, Stock}
 
         [Serializable]
         public class Instrument : INotifyPropertyChanged
@@ -25,16 +25,9 @@ namespace OptionsCalc
                 this._FullName = full_name;
                 this._Id = id;
                 this._Type = type;
-                if (o_type.HasValue) { this._OptionType = (OptionType)o_type; }
-                if (strike.HasValue)
-                {
-                    if (this._OptionType != OptionType.Call || this._OptionType != OptionType.Put)
-                    { 
-                        throw new NotImplementedException();
-                    } 
-                    else this._Strike = (double)strike; 
-                }
-                if (basec.HasValue) { this._BaseContract = (int)basec; }
+                this._OptionType = o_type ;
+                this._Strike = strike; 
+                this._BaseContract = basec; 
             }
 
             public Instrument(int id, string sec_code, string cl, InstrumentType type, string full_name):this(id,sec_code,cl,type,full_name,null,null,null)
@@ -47,9 +40,9 @@ namespace OptionsCalc
             private string _FullName;
             private InstrumentType _Type;
             private int _Id;
-            private OptionType _OptionType;
-            private double _Strike;
-            private int _BaseContract;
+            private OptionType? _OptionType;
+            private double? _Strike;
+            private int? _BaseContract;
 
             public string Code { get{return _Code;} }
 
@@ -57,19 +50,23 @@ namespace OptionsCalc
 
             public string Class { get { return _Class; } }
 
-            public int Id { get; }
+            public int Id { get { return _Id; } }
 
-            public InstrumentType Type { get; }
+            public InstrumentType Type { get { return _Type; } }
 
-            public OptionType OptionType { get; }
+            public OptionType? OptionType { get { return _OptionType; } }
 
             public double LastPrice { get; set;}
-            
-            public double Strike { get; }
+
+            public double? Strike { get { return _Strike; } }
 
             public double Volatility { get; set; }
 
             public double DaysToMate { get; set; }
+
+            public double? TheorPrice { get; set; }
+
+            public DateTime MaturityDate { get; set; }
 
             public double Delta 
             {
@@ -79,14 +76,13 @@ namespace OptionsCalc
                     {
                         return 1;
                     }
-                    else if (this.Type == InstrumentType.Option)
+                    else if (this.Type == InstrumentType.Option )
                     {
-                        return Quant.CalculateDelta(this.OptionType, this.LastPrice, this.Strike, this.Volatility, this.DaysToMate, Quant.RiskFreeRate);
+                        return Quant.CalculateDelta((Entities.OptionType)this._OptionType, this.LastPrice, (double)this.Strike, this.Volatility, this.DaysToMate, Quant.RiskFreeRate);
                     }
                     else return 0;
                 }
             }
-
 
             public double Gamma
             {
@@ -94,7 +90,7 @@ namespace OptionsCalc
                 {
                     if (this.Type == InstrumentType.Option)
                     {
-                        return Quant.CalculateGamma(this.LastPrice, this.Strike, this.Volatility, this.DaysToMate, Quant.RiskFreeRate);
+                        return Quant.CalculateGamma(this.LastPrice, (double)this.Strike, this.Volatility, this.DaysToMate, Quant.RiskFreeRate);
                     }
                     else return 0;
                 }
@@ -106,7 +102,7 @@ namespace OptionsCalc
                 {
                     if (this.Type == InstrumentType.Option)
                     {
-                        return Quant.CalculateVega(this.OptionType, this.LastPrice, this.Strike, this.Volatility, this.DaysToMate, Quant.RiskFreeRate);
+                        return Quant.CalculateVega((Entities.OptionType)this.OptionType, this.LastPrice, (double)this.Strike, this.Volatility, this.DaysToMate, Quant.RiskFreeRate);
                     }
                     else return 0;
                 }
@@ -118,7 +114,7 @@ namespace OptionsCalc
                 {
                     if (this.Type == InstrumentType.Option)
                     {
-                        return Quant.CalculateThetha(this.OptionType, this.LastPrice, this.Strike, this.Volatility, this.DaysToMate, Quant.RiskFreeRate);
+                        return Quant.CalculateThetha((Entities.OptionType)this.OptionType, this.LastPrice, (double)this.Strike, this.Volatility, this.DaysToMate, Quant.RiskFreeRate);
                     }
                     else return 0;
                 }
@@ -130,7 +126,7 @@ namespace OptionsCalc
                 {
                     if (this.Type == InstrumentType.Option)
                     {
-                        return Quant.CalculateRho(this.OptionType, this.LastPrice, this.Strike, this.Volatility, this.DaysToMate, Quant.RiskFreeRate);
+                        return Quant.CalculateRho((Entities.OptionType)this.OptionType, this.LastPrice, (double)this.Strike, this.Volatility, this.DaysToMate, Quant.RiskFreeRate);
                     }
                     else return 0;
                 }
@@ -141,7 +137,7 @@ namespace OptionsCalc
                 return base.ToString();
             }
 
-            public int BaseContract { get { return _BaseContract; } }
+            public int? BaseContract { get { return _BaseContract; } }
 
             public event PropertyChangedEventHandler PropertyChanged;
         }
@@ -157,9 +153,9 @@ namespace OptionsCalc
             private string _Name;
             private int _Id;
 
-            public string Name { get; }
+            public string Name { get { return _Name; } }
 
-            public int Id { get; }
+            public int Id { get { return _Id; } }
 
             public override string ToString()
             {
@@ -189,7 +185,7 @@ namespace OptionsCalc
 
             public int SellQty { get; set; }
 
-            public Instrument Instrument { get; }
+            public Instrument Instrument { get { return _Instrument; } }
 
             public override string ToString()
             {
@@ -232,9 +228,9 @@ namespace OptionsCalc
 
             public string Name { get; set; }
 
-            public Instrument Base { get; }
+            public Instrument Base { get { return _Base; } }
 
-            public Account Account { get; }
+            public Account Account { get { return _Account; } }
 
             private List<Position> Positions;
 
@@ -252,15 +248,14 @@ namespace OptionsCalc
             {
                 foreach (Position pos in Positions)
                 {
-                    this._Delta += pos.TotalNet * pos.Instrument.GetDelta();
-                    this._Gamma += pos.TotalNet * pos.Instrument.GetGamma();
-                    this._Vega += pos.TotalNet * pos.Instrument.GetVega();
-                    this._Thetha += pos.TotalNet * pos.Instrument.GetThetha();
-                    this._Rho += pos.TotalNet * pos.Instrument.GetRho();
+                    this._Delta += pos.TotalNet * pos.Instrument.Delta;
+                    this._Gamma += pos.TotalNet * pos.Instrument.Gamma;
+                    this._Vega += pos.TotalNet * pos.Instrument.Vega;
+                    this._Thetha += pos.TotalNet * pos.Instrument.Thetha;
+                    this._Rho += pos.TotalNet * pos.Instrument.Rho;
                 }
                 
             }
-
 
             public event PropertyChangedEventHandler PropertyChanged;
         }

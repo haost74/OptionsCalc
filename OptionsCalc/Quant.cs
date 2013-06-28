@@ -9,11 +9,10 @@ namespace OptionsCalc
 {
     static class Quant
     {
-        private Quant();
         
-        public static const double RiskFreeRate = 0;
+        public const double RiskFreeRate = 0;
 
-        public static const int YearLength = 365;
+        public const int YearLength = 365;
 
         public static double NormalDistribution(double value)
         {
@@ -118,6 +117,11 @@ namespace OptionsCalc
             {
                 return 0;
             }
+        }
+
+        public static double CalculateTheorPrice()
+        {
+            throw new NotImplementedException();
         }
     }
 }
