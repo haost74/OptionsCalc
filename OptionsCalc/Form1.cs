@@ -11,7 +11,7 @@ namespace OptionsCalc
 {
     public partial class Form1 : Form
     {
-        List<Entities.Instrument> instruments = new List<Entities.Instrument>();
+        BindingList<Entities.Instrument> instruments = new BindingList<Entities.Instrument>();
         List<Entities.Portfolio> portfolios = new List<Entities.Portfolio>();
 
         int indx = 1;
@@ -19,23 +19,24 @@ namespace OptionsCalc
         public Form1()
         {
             InitializeComponent();
+            PortfoliosDG.DefaultCellStyle.NullValue = "";
+            PortfoliosDG.AutoGenerateColumns = true;
+            PortfoliosDG.AutoResizeColumns(DataGridViewAutoSizeColumnsMode.ColumnHeader);
         }
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            PortfoliosDG.AutoGenerateColumns = true;
-            PortfoliosDG.DataSource = portfoliosBS;
-            PortfoliosDG.DefaultCellStyle.NullValue = "";
-
             portfoliosBS.DataSource = instruments;
-            PortfoliosDG.AutoResizeColumns(DataGridViewAutoSizeColumnsMode.ColumnHeader);
+
+            PortfoliosDG.DataSource = portfoliosBS;
+          
         }
 
         private void btnRefresh_Click(object sender, EventArgs e)
         {
-            foreach(Entities.Portfolio p in portfolios)
+            foreach(Entities.Instrument i in instruments)
             {
-                p.Refresh();
+                i.LastPrice=System.Math.E;
 
             }
         }

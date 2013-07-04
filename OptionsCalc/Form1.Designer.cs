@@ -76,7 +76,7 @@
             this.Controls.Add(this.btnRefresh);
             this.Controls.Add(this.PortfoliosDG);
             this.Name = "Form1";
-            this.Text = "Form1";
+            this.Text = "OptionsCalculator";
             this.Load += new System.EventHandler(this.Form1_Load);
             ((System.ComponentModel.ISupportInitialize)(this.PortfoliosDG)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.portfoliosBS)).EndInit();
