@@ -67,7 +67,7 @@ namespace OptionsCalc
                 if (value != this._LastPrice)
                 {
                     this._LastPrice = value;
-                    NotifyPropertyChanged();
+                    NotifyPropertyChanged("LastPrice");
                 }
             }}
 
@@ -81,7 +81,7 @@ namespace OptionsCalc
                 if (value != this._Volatility)
                 {
                     this._Volatility = value;
-                    NotifyPropertyChanged();
+                    NotifyPropertyChanged("Volatility");
                 }
             } }
 
@@ -90,7 +90,7 @@ namespace OptionsCalc
                 if (value != this._DaysToMate)
                 {
                     this._DaysToMate = value;
-                    NotifyPropertyChanged();
+                    NotifyPropertyChanged("DaysToMate");
                 }
             } }
 
@@ -99,7 +99,7 @@ namespace OptionsCalc
                 if (value != this._TheorPrice)
                 {
                     this._TheorPrice = value;
-                    NotifyPropertyChanged();
+                    NotifyPropertyChanged("TheorPrice");
                 }
             } }
 
@@ -108,7 +108,7 @@ namespace OptionsCalc
                 if (this._MaturityDate != value)
                 {
                     this._MaturityDate = value;
-                    NotifyPropertyChanged();
+                    NotifyPropertyChanged("MaturityDate");
                 }
             } }
 
@@ -116,13 +116,13 @@ namespace OptionsCalc
             {
                 get 
                 {
-                    if (this.Type == InstrumentType.Futures)
+                    if (this._Type == InstrumentType.Futures)
                     {
                         return 1;
                     }
-                    else if (this.Type == InstrumentType.Option && this._OptionType!=null)
+                    else if (this._Type == InstrumentType.Option && this._OptionType!=null)
                     {
-                        return Quant.CalculateDelta((Entities.OptionType)this._OptionType, this.LastPrice, (double)this.Strike, this.Volatility, this.DaysToMate, Quant.RiskFreeRate);
+                        return Quant.CalculateDelta((Entities.OptionType)this._OptionType, this._LastPrice, (double)this._Strike, this._Volatility, this._DaysToMate, Quant.RiskFreeRate);
                     }
                     else return 0;
                 }
@@ -132,9 +132,9 @@ namespace OptionsCalc
             {
                 get
                 {
-                    if (this.Type == InstrumentType.Option && this._OptionType!=null)
+                    if (this._Type == InstrumentType.Option && this._OptionType!=null)
                     {
-                        return Quant.CalculateGamma(this.LastPrice, (double)this.Strike, this.Volatility, this.DaysToMate, Quant.RiskFreeRate);
+                        return Quant.CalculateGamma(this._LastPrice, (double)this._Strike, this._Volatility, this._DaysToMate, Quant.RiskFreeRate);
                     }
                     else return 0;
                 }
@@ -144,9 +144,9 @@ namespace OptionsCalc
             {
                 get
                 {
-                    if (this.Type == InstrumentType.Option && this._OptionType != null)
+                    if (this._Type == InstrumentType.Option && this._OptionType != null)
                     {
-                        return Quant.CalculateVega((Entities.OptionType)this.OptionType, this.LastPrice, (double)this.Strike, this.Volatility, this.DaysToMate, Quant.RiskFreeRate);
+                        return Quant.CalculateVega((Entities.OptionType)this._OptionType, this._LastPrice, (double)this._Strike, this._Volatility, this._DaysToMate, Quant.RiskFreeRate);
                     }
                     else return 0;
                 }
@@ -156,9 +156,9 @@ namespace OptionsCalc
             {
                 get
                 {
-                    if (this.Type == InstrumentType.Option && this._OptionType != null)
+                    if (this._Type == InstrumentType.Option && this._OptionType != null)
                     {
-                        return Quant.CalculateThetha((Entities.OptionType)this.OptionType, this.LastPrice, (double)this.Strike, this.Volatility, this.DaysToMate, Quant.RiskFreeRate);
+                        return Quant.CalculateThetha((Entities.OptionType)this._OptionType, this._LastPrice, (double)this._Strike, this._Volatility, this._DaysToMate, Quant.RiskFreeRate);
                     }
                     else return 0;
                 }
@@ -168,9 +168,9 @@ namespace OptionsCalc
             {
                 get
                 {
-                    if (this.Type == InstrumentType.Option && this._OptionType != null)
+                    if (this._Type == InstrumentType.Option && this._OptionType != null)
                     {
-                        return Quant.CalculateRho((Entities.OptionType)this.OptionType, this.LastPrice, (double)this.Strike, this.Volatility, this.DaysToMate, Quant.RiskFreeRate);
+                        return Quant.CalculateRho((Entities.OptionType)this._OptionType, this._LastPrice, (double)this._Strike, this._Volatility, this._DaysToMate, Quant.RiskFreeRate);
                     }
                     else return 0;
                 }
@@ -184,11 +184,12 @@ namespace OptionsCalc
             public int? BaseContract { get { return _BaseContract; } }
 
             public event PropertyChangedEventHandler PropertyChanged;
-            private void NotifyPropertyChanged(string propertyName = "")
+            private void NotifyPropertyChanged(string propertyName )
             {
-                if (PropertyChanged != null)
+                PropertyChangedEventHandler t = PropertyChanged;
+                if (t != null)
                 {
-                    PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+                    t(this, new PropertyChangedEventArgs(propertyName));
                 }
             }
         }
@@ -237,13 +238,14 @@ namespace OptionsCalc
             {
                 get { return this._TotalNet; }
                 set
-            {
-                if (value != this._TotalNet)
                 {
-                    this._TotalNet = value;
-                    NotifyPropertyChanged();
-                }
-            } }
+                    if (value != this._TotalNet)
+                    {
+                        this._TotalNet = value;
+                        NotifyPropertyChanged();
+                    }
+                } 
+            }
 
             public int BuyQty { get { return this._BuyQty; } set 
             {
@@ -273,34 +275,38 @@ namespace OptionsCalc
             public event PropertyChangedEventHandler PropertyChanged;
             private void NotifyPropertyChanged(string propertyName="")
             {
-                if (PropertyChanged != null)
+                PropertyChangedEventHandler t = PropertyChanged;
+                if (t != null)
                 {
-                    PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+                    t(this, new PropertyChangedEventArgs(propertyName));
                 }
             }
         }
 
         [Serializable]
-        public class Portfolio 
+        public class Portfolio : INotifyPropertyChanged
         {
-            public Portfolio(Instrument instr, Account acc)
+            public Portfolio(int instrId, Account acc)
             {
-                this._Base = instr;
-
+                this._BaseId = instrId;
+                this._Positions=new BindingList<Position>();
+                this._Positions.ListChanged += _OnListChange;
                 this._Account = acc;
+
             }
-
-            public Portfolio(Instrument instr, Account acc, Position[] pos)
+      
+            public Portfolio(int instrId, Account acc, BindingList<Position> pos)
             {
-                this._Base = instr;
+                this._BaseId = instrId;
 
                 this._Account = acc;
-
-                foreach (Position p in pos)
-                {
-                    this.Positions.Add(p);
-                }
-
+                this._Positions = pos;
+                
+                _Positions.ListChanged += _OnListChange;
+            }
+            void _OnListChange(object sender, ListChangedEventArgs e)
+            {
+                this.Refresh();
             }
             
             private double _Delta;
@@ -308,16 +314,24 @@ namespace OptionsCalc
             private double _Vega;
             private double _Thetha;
             private double _Rho;
-            private Instrument _Base;
+            private int _BaseId;
             private Account _Account;
+            private BindingList<Position> _Positions;
 
             public string Name { get; set; }
 
-            public Instrument Base { get { return _Base; } }
+            public int BaseId { get { return _BaseId; } }
 
             public Account Account { get { return _Account; } }
 
-            private List<Position> Positions;
+            public BindingList<Position> Positions
+            {
+                get { return _Positions; }
+                set
+                {
+                    this._Positions = value;
+                }
+            }
 
             public  double Delta { get { return _Delta; } }
 
@@ -331,15 +345,32 @@ namespace OptionsCalc
 
             public void Refresh ()
             {
+                this._Delta = 0;
+                this._Gamma = 0;
+                this._Rho = 0;
+                this._Thetha = 0;
+                this._Vega = 0;
                 foreach (Position pos in Positions)
                 {
                     this._Delta += pos.TotalNet * pos.Instrument.Delta;
-                    this._Gamma += pos.TotalNet * pos.Instrument.Gamma;
-                    this._Vega += pos.TotalNet * pos.Instrument.Vega;
-                    this._Thetha += pos.TotalNet * pos.Instrument.Thetha;
-                    this._Rho += pos.TotalNet * pos.Instrument.Rho;
+                    if (pos.Instrument.OptionType != null)
+                    {
+                        this._Gamma += pos.TotalNet * pos.Instrument.Gamma;
+                        this._Vega += pos.TotalNet * pos.Instrument.Vega;
+                        this._Thetha += pos.TotalNet * pos.Instrument.Thetha;
+                        this._Rho += pos.TotalNet * pos.Instrument.Rho;
+                    }
                 }
-                
+                NotifyPropertyChanged();
+            }
+
+            public event PropertyChangedEventHandler PropertyChanged;
+            private void NotifyPropertyChanged(string propertyName = "")
+            {
+                if (PropertyChanged != null)
+                {
+                    PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+                }
             }
 
         }
