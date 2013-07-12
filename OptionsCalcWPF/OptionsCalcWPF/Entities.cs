@@ -218,21 +218,24 @@ namespace OptionsCalcWPF
         [Serializable]
         public class Position : INotifyPropertyChanged
         {
-            public Position(Instrument instr):this(instr,0,0,0)
+            public Position(int accid, int instr):this(accid,instr,0,0,0)
             {
              
             }
-            public Position(Instrument instr, int tnet, int bq, int sq)
+            public Position(int accid, int instrId, int tnet, int bq, int sq)
             {
-                this._Instrument = instr;
+                this._InstrumentId = instrId;
+                this._AccountId = accid;
                 this.BuyQty = bq;
                 this.SellQty = sq;
                 this.TotalNet = tnet;
             }
-            private Instrument _Instrument;
+            private int _InstrumentId;
+            private int _AccountId;
             private int _TotalNet;
             private int _BuyQty;
             private int _SellQty;
+            
 
             public int TotalNet
             {
@@ -265,7 +268,9 @@ namespace OptionsCalcWPF
                 }
             } }
 
-            public Instrument Instrument { get { return _Instrument; } }
+            public int Instrument { get { return this._InstrumentId; } }
+
+            public int AccountId { get { return this._AccountId; } }
 
             public override string ToString()
             {
@@ -286,20 +291,21 @@ namespace OptionsCalcWPF
         [Serializable]
         public class Portfolio : INotifyPropertyChanged
         {
-            public Portfolio(int instrId, Account acc)
+            public Portfolio(int id, int instrId, int acc)
             {
+                this._Id = id;
                 this._BaseId = instrId;
                 this._Positions=new BindingList<Position>();
                 this._Positions.ListChanged += _OnListChange;
-                this._Account = acc;
+                this._AccountId = acc;
 
             }
       
-            public Portfolio(int instrId, Account acc, BindingList<Position> pos)
+            public Portfolio(int id,int instrId, int acc, BindingList<Position> pos)
             {
                 this._BaseId = instrId;
-
-                this._Account = acc;
+                this._Id = id;
+                this._AccountId = acc;
                 this._Positions = pos;
                 
                 _Positions.ListChanged += _OnListChange;
@@ -315,14 +321,15 @@ namespace OptionsCalcWPF
             private double _Thetha;
             private double _Rho;
             private int _BaseId;
-            private Account _Account;
+            private int _AccountId;
+            private int _Id;
             private BindingList<Position> _Positions;
 
             public string Name { get; set; }
 
             public int BaseId { get { return _BaseId; } }
 
-            public Account Account { get { return _Account; } }
+            public int Account { get { return _AccountId; } }
 
             public BindingList<Position> Positions
             {
