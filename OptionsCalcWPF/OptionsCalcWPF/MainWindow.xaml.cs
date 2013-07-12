@@ -25,18 +25,22 @@ namespace OptionsCalcWPF
     {
         TestData data;
         BindingList<Entities.Portfolio> lstPortfolios;
+        BindingList<Entities.Instrument> lstInstruments;
         DispatcherTimer _timer;
+
         public MainWindow()
         {
             InitializeComponent();
             data = new TestData();
             data.Connect();
             lstPortfolios = new BindingList<Entities.Portfolio>(data.Portfolios);
+            lstInstruments = new BindingList<Entities.Instrument>(data.Instruments);
             _timer = new DispatcherTimer();
             _timer.Tick += OnTimer;
             _timer.Interval = new TimeSpan(0,0,2);
             _timer.Start();
             dgrPortfolios.ItemsSource = lstPortfolios;
+            dgrODesk.ItemsSource = lstInstruments;
         }
 
         void OnTimer(object s, EventArgs e)

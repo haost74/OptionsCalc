@@ -52,7 +52,7 @@ namespace OptionsCalcWPF
 
         public void updateData() 
         {
-            var id = rnd.Next(1, 4);
+            var id = rnd.Next(0, 4);
             this._instrumentslist.ElementAt(id).Volatility = rnd.NextDouble();
             this._instrumentslist.ElementAt(id).LastPrice = rnd.NextDouble() * 5;
             this._positionslist.ElementAt(id).TotalNet = rnd.Next(0, 10);

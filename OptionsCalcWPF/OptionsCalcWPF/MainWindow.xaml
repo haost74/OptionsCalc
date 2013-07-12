@@ -1,18 +1,35 @@
 ﻿<Window x:Class="OptionsCalcWPF.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="MainWindow" Height="206" Width="397" HorizontalContentAlignment="Right">
-    <StackPanel Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Stretch">
-        <DataGrid Name="dgrPortfolios"  AutoGenerateColumns="False" Height="200" Width="657" ItemsSource="{Binding lstPortfolios }"  >
-            <DataGrid.Columns>
-                <DataGridTextColumn Binding="{Binding Name}" Header="Portfolio Name"/>
-                <DataGridTextColumn Binding="{Binding BaseId}" Header="BaseContract"/>
-                <DataGridTextColumn Binding="{Binding Delta}" Header="Delta"/>
-                <DataGridTextColumn Binding="{Binding Gamma}" Header="Gamma"/>
-                <DataGridTextColumn Binding="{Binding Vega}" Header="Vega"/>
-                <DataGridTextColumn Binding="{Binding Thetha}" Header="Thetha"/>
-                <DataGridTextColumn Binding="{Binding Rho}" Header="Rho"/>
-            </DataGrid.Columns>
-        </DataGrid>
-    </StackPanel>
+        Title="OptionsCalculator" Height="310" Width="640" HorizontalContentAlignment="Right" Name="OptionsCalculator">
+    
+    <TabControl Height="Auto" Name="tabControl1" Width="Auto">
+        <TabItem Header="Option Desk" Name="tabODesk">
+            <DataGrid Name="dgrODesk" AutoGenerateColumns="False" Height="Auto" Width="Auto" ItemsSource="{Binding lstInstruments}">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Binding="{Binding Code, StringFormat=\{0:F4\}}" Header="Code"/>
+                    <!--<DataGridTextColumn Binding="{Binding Strike}" Header="Strike"/>-->
+                    <DataGridTextColumn Binding="{Binding LastPrice, StringFormat=\{0:F4\}}" Header="LastPrice"/>
+                    <DataGridTextColumn Binding="{Binding Volatility, StringFormat=\{0:F4\}}" Header="Volatility"/>
+                </DataGrid.Columns>
+            </DataGrid>
+        </TabItem>
+        <TabItem Header="Portfolios" Name="tabPortfolios">
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Stretch">
+                <DataGrid Name="dgrPortfolios"  AutoGenerateColumns="False" Height="Auto" Width="Auto" ItemsSource="{Binding lstPortfolios }"  >
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Binding="{Binding Name}" Header="Portfolio Name"/>
+                        <DataGridTextColumn Binding="{Binding BaseId}" Header="BaseContract"/>
+                        <DataGridTextColumn Binding="{Binding Delta, StringFormat=\{0:F4\}}" Header="Delta"/>
+                        <DataGridTextColumn Binding="{Binding Gamma, StringFormat=\{0:F4\}}" Header="Gamma"/>
+                        <DataGridTextColumn Binding="{Binding Vega, StringFormat=\{0:F4\}}" Header="Vega"/>
+                        <DataGridTextColumn Binding="{Binding Thetha, StringFormat=\{0:F4\}}" Header="Thetha"/>
+                        <DataGridTextColumn Binding="{Binding Rho, StringFormat=\{0:F4\}}" Header="Rho"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </StackPanel>
+        </TabItem>
+        
+    </TabControl>
+    
 </Window>
