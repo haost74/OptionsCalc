@@ -5,9 +5,9 @@ using System.Text;
 
 
 
-namespace OptionsCalcWPF
+namespace Common
 {
-    static class Quant
+    public static class Quant
     {
         
         public const double RiskFreeRate = 0;
@@ -43,7 +43,7 @@ namespace OptionsCalcWPF
             return (Math.Exp(-0.5 * value * value) / Math.Sqrt(2 * Math.PI));
         }
 
-        public static double CalculateDelta(Entities.OptionType type, double settleprice, double strike, double volatility, double daystomate, double risk_free)
+        public static double CalculateDelta(Entities.OptionType type, double settleprice, double strike, double volatility, int daystomate, double risk_free)
         {
             double pdaystomate = daystomate / YearLength;
             double d1=(Math.Log(settleprice/strike)+volatility*volatility*0.5*pdaystomate)/(volatility*Math.Sqrt(pdaystomate));
@@ -63,13 +63,13 @@ namespace OptionsCalcWPF
 	
         }
 
-        public static double CalculateGamma(double settleprice, double strike, double volatility, double daystomate, double risk_free)
+        public static double CalculateGamma(double settleprice, double strike, double volatility, int daystomate, double risk_free)
         {
             double pdaystomate = daystomate / YearLength;
             return 100 * NormalDistributionDensity(Math.Log(settleprice / strike)) / (settleprice * volatility * Math.Sqrt(pdaystomate));
         }
 
-        public static double CalculateVega(Entities.OptionType type, double settleprice, double strike, double volatility, double daystomate, double risk_free)
+        public static double CalculateVega(Entities.OptionType type, double settleprice, double strike, double volatility, int daystomate, double risk_free)
         {
             double pdaystomate = daystomate / YearLength;
             double d1 = (Math.Log(settleprice / strike) + volatility * volatility * 0.5 * pdaystomate) / (volatility * Math.Sqrt(pdaystomate));
@@ -78,7 +78,7 @@ namespace OptionsCalcWPF
 
         }
 
-        public static double CalculateThetha(Entities.OptionType type, double settleprice, double strike, double volatility, double daystomate, double risk_free)
+        public static double CalculateThetha(Entities.OptionType type, double settleprice, double strike, double volatility, int daystomate, double risk_free)
         {
             double pdaystomate = daystomate / YearLength;
             double d1 = (Math.Log(settleprice / strike) + volatility * volatility * 0.5 * pdaystomate) / (volatility * Math.Sqrt(pdaystomate));
@@ -99,7 +99,7 @@ namespace OptionsCalcWPF
             }
         }
 
-        public static double CalculateRho(Entities.OptionType type, double settleprice, double strike, double volatility, double daystomate, double risk_free)
+        public static double CalculateRho(Entities.OptionType type, double settleprice, double strike, double volatility, int daystomate, double risk_free)
         {
             double pdaystomate = daystomate / YearLength;
             double d1 = (Math.Log(settleprice / strike) + volatility * volatility * 0.5 * pdaystomate) / (volatility * Math.Sqrt(pdaystomate));

@@ -5,9 +5,9 @@ using System.Text;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
-namespace OptionsCalcWPF
+namespace Common
 {
-    class Entities
+    public static class Entities
     {
         
         [SerializableAttribute]
@@ -19,7 +19,7 @@ namespace OptionsCalcWPF
         [Serializable]
         public class Instrument : INotifyPropertyChanged
         {
-            public Instrument(int id, string sec_code, string cl, InstrumentType type, string full_name, OptionType? o_type, double? strike, int? basec)
+            public Instrument(int id, string sec_code, string cl, InstrumentType type, string full_name, OptionType? o_type, double? strike, string basec)
             {
                 this._Class = cl;
                 this._Code = sec_code;
@@ -29,9 +29,12 @@ namespace OptionsCalcWPF
                 this._OptionType = o_type ;
                 this._Strike = strike; 
                 this._BaseContract = basec; 
+                this._LastPrice=0;
+                this._DaysToMate=0;
+                this._MaturityDate=new DateTime();
             }
 
-            public Instrument(int id, string sec_code, string cl, InstrumentType type, string full_name):this(id,sec_code,cl,type,full_name,null,null,null)
+            public Instrument(int id, string sec_code, string cl, InstrumentType type, string basec, string full_name):this(id,sec_code,cl,type,full_name,null,null,basec)
             { 
                 
             }
@@ -43,9 +46,9 @@ namespace OptionsCalcWPF
             private int _Id;
             private OptionType? _OptionType;
             private double? _Strike;
-            private int? _BaseContract;
+            private string _BaseContract;
             private double _LastPrice;
-            private double _Volatility;
+            private double? _Volatility;
             private int _DaysToMate;
             private DateTime _MaturityDate;
             private double? _TheorPrice;
@@ -55,6 +58,8 @@ namespace OptionsCalcWPF
             public string FullName { get { return _FullName; } }
 
             public string Class { get { return _Class; } }
+
+            public string BaseContract { get { return _BaseContract; } }
 
             public int Id { get { return _Id; } }
 
@@ -73,7 +78,7 @@ namespace OptionsCalcWPF
 
             public double? Strike { get { return _Strike; } }
 
-            public double Volatility
+            public double? Volatility
             {
                 get { return this._Volatility; }
                 set
@@ -122,7 +127,7 @@ namespace OptionsCalcWPF
                     }
                     else if (this._Type == InstrumentType.Option && this._OptionType!=null)
                     {
-                        return Quant.CalculateDelta((Entities.OptionType)this._OptionType, this._LastPrice, (double)this._Strike, this._Volatility, this._DaysToMate, Quant.RiskFreeRate);
+                        return Quant.CalculateDelta((Entities.OptionType)this._OptionType, this._LastPrice, (double)this._Strike, (double)this._Volatility, this._DaysToMate, Quant.RiskFreeRate);
                     }
                     else return 0;
                 }
@@ -134,7 +139,7 @@ namespace OptionsCalcWPF
                 {
                     if (this._Type == InstrumentType.Option && this._OptionType!=null)
                     {
-                        return Quant.CalculateGamma(this._LastPrice, (double)this._Strike, this._Volatility, this._DaysToMate, Quant.RiskFreeRate);
+                        return Quant.CalculateGamma(this._LastPrice, (double)this._Strike, (double)this._Volatility, this._DaysToMate, Quant.RiskFreeRate);
                     }
                     else return 0;
                 }
@@ -146,7 +151,7 @@ namespace OptionsCalcWPF
                 {
                     if (this._Type == InstrumentType.Option && this._OptionType != null)
                     {
-                        return Quant.CalculateVega((Entities.OptionType)this._OptionType, this._LastPrice, (double)this._Strike, this._Volatility, this._DaysToMate, Quant.RiskFreeRate);
+                        return Quant.CalculateVega((Entities.OptionType)this._OptionType, this._LastPrice, (double)this._Strike, (double)this._Volatility, this._DaysToMate, Quant.RiskFreeRate);
                     }
                     else return 0;
                 }
@@ -158,7 +163,7 @@ namespace OptionsCalcWPF
                 {
                     if (this._Type == InstrumentType.Option && this._OptionType != null)
                     {
-                        return Quant.CalculateThetha((Entities.OptionType)this._OptionType, this._LastPrice, (double)this._Strike, this._Volatility, this._DaysToMate, Quant.RiskFreeRate);
+                        return Quant.CalculateThetha((Entities.OptionType)this._OptionType, this._LastPrice, (double)this._Strike, (double)this._Volatility, this._DaysToMate, Quant.RiskFreeRate);
                     }
                     else return 0;
                 }
@@ -170,7 +175,7 @@ namespace OptionsCalcWPF
                 {
                     if (this._Type == InstrumentType.Option && this._OptionType != null)
                     {
-                        return Quant.CalculateRho((Entities.OptionType)this._OptionType, this._LastPrice, (double)this._Strike, this._Volatility, this._DaysToMate, Quant.RiskFreeRate);
+                        return Quant.CalculateRho((Entities.OptionType)this._OptionType, this._LastPrice, (double)this._Strike, (double)this._Volatility, this._DaysToMate, Quant.RiskFreeRate);
                     }
                     else return 0;
                 }
@@ -180,8 +185,6 @@ namespace OptionsCalcWPF
             {
                 return base.ToString();
             }
-
-            public int? BaseContract { get { return _BaseContract; } }
 
             public event PropertyChangedEventHandler PropertyChanged;
             private void NotifyPropertyChanged(string propertyName )
@@ -218,20 +221,20 @@ namespace OptionsCalcWPF
         [Serializable]
         public class Position : INotifyPropertyChanged
         {
-            public Position(int accid, int instr):this(accid,instr,0,0,0)
+            public Position(string accid, Instrument instr):this(accid,instr,0,0,0)
             {
              
             }
-            public Position(int accid, int instrId, int tnet, int bq, int sq)
+            public Position(string accid, Instrument instrId, int tnet, int bq, int sq)
             {
                 this._InstrumentId = instrId;
-                this._AccountId = accid;
+                this._AccountName = accid;
                 this.BuyQty = bq;
                 this.SellQty = sq;
                 this.TotalNet = tnet;
             }
-            private int _InstrumentId;
-            private int _AccountId;
+            private Instrument _InstrumentId;
+            private string _AccountName;
             private int _TotalNet;
             private int _BuyQty;
             private int _SellQty;
@@ -268,9 +271,9 @@ namespace OptionsCalcWPF
                 }
             } }
 
-            public int Instrument { get { return this._InstrumentId; } }
+            public Instrument Instrument { get { return this._InstrumentId; } }
 
-            public int AccountId { get { return this._AccountId; } }
+            public string AccountName { get { return this._AccountName; } }
 
             public override string ToString()
             {
@@ -291,20 +294,20 @@ namespace OptionsCalcWPF
         [Serializable]
         public class Portfolio : INotifyPropertyChanged
         {
-            public Portfolio(int id, int instrId, int acc)
+            public Portfolio(string baseinstrCode, string acc)
             {
-                this._Id = id;
-                this._BaseId = instrId;
+                
+                this._BaseCode = baseinstrCode;
                 this._Positions=new BindingList<Position>();
                 this._Positions.ListChanged += _OnListChange;
                 this._AccountId = acc;
 
             }
       
-            public Portfolio(int id,int instrId, int acc, BindingList<Position> pos)
+            public Portfolio(string baseinstrCode, string acc, BindingList<Position> pos)
             {
-                this._BaseId = instrId;
-                this._Id = id;
+                this._BaseCode = baseinstrCode;
+                
                 this._AccountId = acc;
                 this._Positions = pos;
                 
@@ -320,16 +323,16 @@ namespace OptionsCalcWPF
             private double _Vega;
             private double _Thetha;
             private double _Rho;
-            private int _BaseId;
-            private int _AccountId;
-            private int _Id;
+            private string _BaseCode;
+            private string _AccountId;
+            
             private BindingList<Position> _Positions;
 
             public string Name { get; set; }
 
-            public int BaseId { get { return _BaseId; } }
+            public string BaseCode { get { return _BaseCode; } }
 
-            public int Account { get { return _AccountId; } }
+            public string Account { get { return _AccountId; } }
 
             public BindingList<Position> Positions
             {

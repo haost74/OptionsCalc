@@ -10,14 +10,16 @@ acctosend={}
 filter_acc=''
 instruments={}
 accounts={}
+positions={}
 
 local sfind=string.find
-FUT_OPT_CLASSES="FUTUX,SPBFUT,OPTUX,SPBOPT"
+FUT_OPT_CLASSES="FUTUX,SPBFUT"
 
 
 function OnParam(class,sec)
-	if is_run and (class=='SPBFUT' or class=='SPBOPT' or class=='FUTUX' or class=='OPTUX') then
+	if is_run and (class=='SPBFUT' or class=='FUTUX' ) then
 		--local st=os.clock()
+		-- or class=='OPTUX' class=='SPBOPT' or 
 		local i=instruments[sec].Dynamic
 		i.LastPrice=tonumber(getParamEx(class,sec,"Last").param_value)
 		i.Volatility=tonumber(getParamEx(class,sec,"Volatility").param_value)
@@ -43,7 +45,8 @@ function OnFuturesClientHolding(hold)
 	if is_run and hold~=nil and (filter_acc=='' or string.find(filter_acc,hold.trdaccid)~=nil) then
 		--toLog(log,'New holding update')
 		--table.insert(acctosend,jsonhold)
-		postosend[#postosend+1]=json.encode(hold)
+		local t={['AccountName']=hold.trdaccid,['SecurityCode']=hold.sec_code,['TotalNet']=hold.totalnet}
+		postosend[#postosend+1]=json.encode(t)
 	end
 end
 
@@ -70,7 +73,8 @@ function OnInitDo()
 			static.Code=sec
 			static.FullName=getParamEx(cl,sec,'LONGNAME').param_image
 			static.Id=id
-			
+			if cl=='FUTUX' or cl=='SPBFUT' then static.InstrumentType='Futures' else static.InstrumentType='Option' end
+
 			static.OptionType=getParamEx(cl,sec,"OPTIONTYPE").param_image
 			static.Strike=tonumber(getParamEx(cl,sec,"STRIKE").param_value)
 			static.BaseContract=getParamEx(cl,sec,"OPTIONBASE").param_image
@@ -81,7 +85,7 @@ function OnInitDo()
 			dynamic.Volatility=tonumber(getParamEx(cl,sec,'volatility').param_value)
 			dynamic.TheorPrice=tonumber(getParamEx(cl,sec,'theorprice').param_value)
 			dynamic.Id=id
-			dynamic.MsgType='INSTRUMENT'
+			--dynamic.MsgType='INSTRUMENT'
 			id=id+1
 		end
 	end
@@ -90,11 +94,19 @@ function OnInitDo()
 	for i=1,getNumberOf('trade_accounts') do
 		local itm=getItem('trade_accounts',i)
 		if (sf(itm.class_codes,'FUTUX')~=nil or sf(itm.class_codes,'OPTUX')~=nil or sf(itm.class_codes,'SPBFUT')~=nil or sf(itm.class_codes,'SPBOPT')~=nil ) then
-			accounts[#accounts+1]={}
-			accounts[#accounts].Name=itm.trdaccid
-			accounts[#accounts].Id=id
+			accounts[#accounts+1]={['Name']=itm.trdaccid,['Id']=id}
+			--accounts[#accounts].Name=itm.trdaccid
+			--accounts[#accounts].Id=id
 			id=id+1
 		end
+	end
+	for i=1,getNumberOf('futures_client_holding') do
+		local itm=getItem('futures_client_holding')
+		positions[#positions+1]={
+			['AccountName']=itm.trdaccid,
+			['SecurityCode']=itm.sec_code,
+			['TotalNet']=itm.totalnet
+		}
 	end
 	return true
 	--is_run=true
@@ -109,7 +121,8 @@ function main()
 	publisher:bind("tcp://127.0.0.1:5563")
 	reply:bind("tcp://127.0.0.1:5562")
 	reply:recv()
-	reply:send('SYNCEND')
+	message('Connected',1)
+	reply:send('CONNECTED')
 	for k,v in pairs(instruments) do
 		publisher:send('NEWINSTRUMENT',zmq.SNDMORE)
 		publisher:send(json.encode(v.Static))
@@ -118,7 +131,14 @@ function main()
 		publisher:send('ACCOUNT',zmq.SNDMORE)
 		publisher:send(json.encode(v))
 	end
-	
+	for k,v in ipairs(positions) do
+		publisher:send('POSITION',zmq.SNDMORE)
+		publisher:send(json.encode(v))
+	end
+
+	publisher:send('COMMON',zmq.SNDMORE)
+	publisher:send('INITIALSYNCEND')
+	message('INITIALSYNCEND',1)
 	is_run=true
 	while is_run do
 		if #itosend~=0 then
