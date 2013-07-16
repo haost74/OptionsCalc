@@ -39,7 +39,15 @@ namespace OptionsCalcWPF
 
         private void ConnectionManager_OnConnected(string obj)
         {
-            textBoxConnectionStatus.Text = "Connected";
+            textBoxConnectionStatus.Dispatcher.Invoke(System.Windows.Threading.DispatcherPriority.Normal,
+                new Action(
+                    delegate()
+                    {
+                        textBoxConnectionStatus.Text = "Connected";
+                    }
+                    ));
+            //textBoxConnectionStatus.Text = "Connected";
+            
         }
 
         private void OptionsCalculator_Closed(object sender, EventArgs e)
@@ -53,8 +61,9 @@ namespace OptionsCalcWPF
             {
                 dataThread = new Thread(ConnectionManager.Connect);
                 dataThread.Start();
-            }
                 //ConnectionManager.Connect();
+            }
+                
             if (textBoxConnectionStatus.Text == "Connected")
                 ConnectionManager.Disconect();
         }
