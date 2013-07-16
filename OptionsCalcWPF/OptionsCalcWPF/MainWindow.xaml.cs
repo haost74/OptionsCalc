@@ -59,13 +59,17 @@ namespace OptionsCalcWPF
         {
             if (textBoxConnectionStatus.Text == "Disconnected")
             {
+                btnConnect.Content = "Disconnect";
                 dataThread = new Thread(ConnectionManager.Connect);
                 dataThread.Start();
                 //ConnectionManager.Connect();
             }
-                
+
             if (textBoxConnectionStatus.Text == "Connected")
+            {
+                btnConnect.Content = "Connect";
                 ConnectionManager.Disconect();
+            }
         }
 
         private void OptionsCalculator_Loaded(object sender, RoutedEventArgs e)
