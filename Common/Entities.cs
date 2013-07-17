@@ -10,13 +10,13 @@ namespace Common
     public static class Entities
     {
         
-        [SerializableAttribute]
+        
         public enum OptionType { Call = 0, Put };
 
-        [SerializableAttribute]
+        
         public enum InstrumentType { Futures=0, Index, Bond, Option, Stock}
 
-        [Serializable]
+        
         public class Instrument : INotifyPropertyChanged
         {
             public Instrument(int id, string sec_code, string cl, InstrumentType type, string full_name, OptionType? o_type, double? strike, string basec)
@@ -29,11 +29,10 @@ namespace Common
                 this._OptionType = o_type ;
                 this._Strike = strike; 
                 this._BaseContract = basec; 
-                this._LastPrice=0;
-                this._DaysToMate=0;
-                this._MaturityDate=new DateTime();
+                //this._LastPrice=0;
+                //this._DaysToMate=0;
+                //this._MaturityDate=new DateTime();
             }
-
             public Instrument(int id, string sec_code, string cl, InstrumentType type, string basec, string full_name):this(id,sec_code,cl,type,full_name,null,null,basec)
             { 
                 
@@ -49,24 +48,69 @@ namespace Common
             private string _BaseContract;
             private double _LastPrice;
             private double? _Volatility;
-            private int _DaysToMate;
-            private DateTime _MaturityDate;
+            private int? _DaysToMate;
+            private DateTime? _MaturityDate;
             private double? _TheorPrice;
-
+            private double _BestBid;
+            private int _BestBidVolume;
+            private double _BestAsk;
+            private int _BestAskVolume;
+            #region Public Properties
+            public double BestBid
+            {
+                get { return this._BestBid; }
+                set
+                {
+                    if (value != this._BestBid)
+                    {
+                        this._BestBid = value;
+                        NotifyPropertyChanged("BestBid");
+                    }
+                }
+            }
+            public double BestAsk
+            {
+                get { return this._BestAsk; }
+                set
+                {
+                    if (value != this._BestAsk)
+                    {
+                        this._BestAsk = value;
+                        NotifyPropertyChanged("BestAsk");
+                    }
+                }
+            }
+            public int BestBidVolume
+            {
+                get { return this._BestBidVolume; }
+                set
+                {
+                    if (value != this._BestBidVolume)
+                    {
+                        this._BestBidVolume = value;
+                        NotifyPropertyChanged("BestBidVolume");
+                    }
+                }
+            }
+            public int BestAskVolume
+            {
+                get { return this._BestAskVolume; }
+                set
+                {
+                    if (value != this._BestAskVolume)
+                    {
+                        this._BestAskVolume = value;
+                        NotifyPropertyChanged("BestAskVolume");
+                    }
+                }
+            }
             public string Code { get{return _Code;} }
-
             public string FullName { get { return _FullName; } }
-
             public string Class { get { return _Class; } }
-
             public string BaseContract { get { return _BaseContract; } }
-
             public int Id { get { return _Id; } }
-
             public InstrumentType Type { get { return _Type; } }
-
             public OptionType? OptionType { get { return _OptionType; } }
-
             public double LastPrice { get{ return this._LastPrice;} set
             {
                 if (value != this._LastPrice)
@@ -75,9 +119,7 @@ namespace Common
                     NotifyPropertyChanged("LastPrice");
                 }
             }}
-
             public double? Strike { get { return _Strike; } }
-
             public double? Volatility
             {
                 get { return this._Volatility; }
@@ -89,8 +131,7 @@ namespace Common
                     NotifyPropertyChanged("Volatility");
                 }
             } }
-
-            public int DaysToMate { get { return this._DaysToMate; } set 
+            public int? DaysToMate { get { return this._DaysToMate; } set 
             {
                 if (value != this._DaysToMate)
                 {
@@ -98,7 +139,6 @@ namespace Common
                     NotifyPropertyChanged("DaysToMate");
                 }
             } }
-
             public double? TheorPrice { get { return this._TheorPrice; } set 
             {
                 if (value != this._TheorPrice)
@@ -107,8 +147,7 @@ namespace Common
                     NotifyPropertyChanged("TheorPrice");
                 }
             } }
-
-            public DateTime MaturityDate { get { return this._MaturityDate; } set 
+            public DateTime? MaturityDate { get { return this._MaturityDate; } set 
             {
                 if (this._MaturityDate != value)
                 {
@@ -116,7 +155,8 @@ namespace Common
                     NotifyPropertyChanged("MaturityDate");
                 }
             } }
-
+            #endregion
+            #region Greeks
             public double Delta 
             {
                 get 
@@ -127,65 +167,61 @@ namespace Common
                     }
                     else if (this._Type == InstrumentType.Option && this._OptionType!=null)
                     {
-                        return Quant.CalculateDelta((Entities.OptionType)this._OptionType, this._LastPrice, (double)this._Strike, (double)this._Volatility, this._DaysToMate, Quant.RiskFreeRate);
+                        return Quant.CalculateDelta((Entities.OptionType)this._OptionType, this._LastPrice, (double)this._Strike, (double)this._Volatility, (int)this._DaysToMate, Quant.RiskFreeRate);
                     }
                     else return 0;
                 }
             }
-
             public double Gamma
             {
                 get
                 {
                     if (this._Type == InstrumentType.Option && this._OptionType!=null)
                     {
-                        return Quant.CalculateGamma(this._LastPrice, (double)this._Strike, (double)this._Volatility, this._DaysToMate, Quant.RiskFreeRate);
+                        return Quant.CalculateGamma(this._LastPrice, (double)this._Strike, (double)this._Volatility, (int)this._DaysToMate, Quant.RiskFreeRate);
                     }
                     else return 0;
                 }
             }
-
             public double Vega
             {
                 get
                 {
                     if (this._Type == InstrumentType.Option && this._OptionType != null)
                     {
-                        return Quant.CalculateVega((Entities.OptionType)this._OptionType, this._LastPrice, (double)this._Strike, (double)this._Volatility, this._DaysToMate, Quant.RiskFreeRate);
+                        return Quant.CalculateVega((Entities.OptionType)this._OptionType, this._LastPrice, (double)this._Strike, (double)this._Volatility, (int)this._DaysToMate, Quant.RiskFreeRate);
                     }
                     else return 0;
                 }
             }
-
             public double Thetha
             {
                 get
                 {
                     if (this._Type == InstrumentType.Option && this._OptionType != null)
                     {
-                        return Quant.CalculateThetha((Entities.OptionType)this._OptionType, this._LastPrice, (double)this._Strike, (double)this._Volatility, this._DaysToMate, Quant.RiskFreeRate);
+                        return Quant.CalculateThetha((Entities.OptionType)this._OptionType, this._LastPrice, (double)this._Strike, (double)this._Volatility, (int)this._DaysToMate, Quant.RiskFreeRate);
                     }
                     else return 0;
                 }
             }
-
             public double Rho
             {
                 get
                 {
                     if (this._Type == InstrumentType.Option && this._OptionType != null)
                     {
-                        return Quant.CalculateRho((Entities.OptionType)this._OptionType, this._LastPrice, (double)this._Strike, (double)this._Volatility, this._DaysToMate, Quant.RiskFreeRate);
+                        return Quant.CalculateRho((Entities.OptionType)this._OptionType, this._LastPrice, (double)this._Strike, (double)this._Volatility, (int)this._DaysToMate, Quant.RiskFreeRate);
                     }
                     else return 0;
                 }
             }
-
+            #endregion
             public override string ToString()
             {
                 return base.ToString();
             }
-
+            #region INotifyPropertyChange
             public event PropertyChangedEventHandler PropertyChanged;
             private void NotifyPropertyChanged(string propertyName )
             {
@@ -195,9 +231,10 @@ namespace Common
                     t(this, new PropertyChangedEventArgs(propertyName));
                 }
             }
+            #endregion
         }
 
-        [Serializable]
+        
         public class Account 
         {
             public Account(string name, int id)
@@ -218,7 +255,7 @@ namespace Common
             }
         }
 
-        [Serializable]
+        
         public class Position : INotifyPropertyChanged
         {
             public Position(string accid, Instrument instr):this(accid,instr,0,0,0)
@@ -291,7 +328,7 @@ namespace Common
             }
         }
 
-        [Serializable]
+        
         public class Portfolio : INotifyPropertyChanged
         {
             public Portfolio(string baseinstrCode, string acc)

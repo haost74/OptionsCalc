@@ -16,7 +16,7 @@ using System.ComponentModel;
 using System.Windows.Threading;
 using Common;
 using QuikConnectionManager;
-
+using NLog;
 
 namespace OptionsCalcWPF
 {
@@ -27,12 +27,14 @@ namespace OptionsCalcWPF
     {
         BindingList<Entities.Portfolio> lstPortfolios;
         BindingList<Entities.Instrument> lstInstruments;
+        BindingList<ViewModel.DeskViewModel> lstTest; 
         Thread dataThread;
+        Logger mainLog;
 
         public MainWindow()
         {
             InitializeComponent();
-
+            mainLog = LogManager.GetLogger("Main");
         }
 
 
@@ -44,14 +46,24 @@ namespace OptionsCalcWPF
                     delegate()
                     {
                         textBoxConnectionStatus.Text = "Connected";
+                        mainLog.Info("Connected to datastream");
+                        dgrODesk.Items.Refresh();
+                        foreach (var i in lstInstruments)
+                        {
+                            if (i.Type == Entities.InstrumentType.Option && i.OptionType==Entities.OptionType.Call)
+                            {
+                                var t = lstInstruments.First(k => k.Strike == i.Strike && k.OptionType == Entities.OptionType.Put && k.BaseContract == i.BaseContract && k.DaysToMate==i.DaysToMate);
+                                lstTest.Add(new ViewModel.DeskViewModel(i,t,(double)i.Strike,(DateTime)i.MaturityDate));
+                            }
+                        }
                     }
                     ));
-            //textBoxConnectionStatus.Text = "Connected";
             
         }
 
         private void OptionsCalculator_Closed(object sender, EventArgs e)
         {
+            mainLog.Info("Disconnect from datastream on FormClose");
             ConnectionManager.Disconect();
         }
 
@@ -59,6 +71,7 @@ namespace OptionsCalcWPF
         {
             if (textBoxConnectionStatus.Text == "Disconnected")
             {
+                mainLog.Info("Try to Connect to datastream");
                 btnConnect.Content = "Disconnect";
                 dataThread = new Thread(ConnectionManager.Connect);
                 dataThread.Start();
@@ -67,8 +80,10 @@ namespace OptionsCalcWPF
 
             if (textBoxConnectionStatus.Text == "Connected")
             {
+                mainLog.Info("Try to Disconnect from datastream");
                 btnConnect.Content = "Connect";
                 ConnectionManager.Disconect();
+                textBoxConnectionStatus.Text = "Disconnected";
             }
         }
 
@@ -79,6 +94,7 @@ namespace OptionsCalcWPF
                 DataManager.Init();
                 lstPortfolios = new BindingList<Entities.Portfolio>(DataManager.Portfolios);
                 lstInstruments = new BindingList<Entities.Instrument>(DataManager.Instruments);
+                lstTest=new BindingList<ViewModel.DeskViewModel>();
 
                 ConnectionManager.OnAccount += DataManager.UpdateAccount;
                 ConnectionManager.OnNewInstrument += DataManager.AddInstrument;
@@ -88,11 +104,11 @@ namespace OptionsCalcWPF
 
                 dgrPortfolios.ItemsSource = lstPortfolios;
                 dgrODesk.ItemsSource = lstInstruments;
-
+                dgrTest.ItemsSource = lstTest;
             }
             catch (Exception exp)
             {
-                Console.WriteLine(exp.ToString());
+                mainLog.Error("Error on DataManager or ConnectionManager initialization {0}",exp.Message);
             }
         }
 

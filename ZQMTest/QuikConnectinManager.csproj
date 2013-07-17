@@ -59,7 +59,7 @@
     <None Include="Lua\dkjson.lua">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Lua\zmq_test.lua">
+    <None Include="Lua\data_server.lua">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="packages.config" />
