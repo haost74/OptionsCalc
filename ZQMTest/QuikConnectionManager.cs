@@ -68,7 +68,7 @@ namespace QuikConnectionManager
                                 break;
                             default: throw new Exception("Unknown message title");   
                         }
-
+                        
                         //Object obj = JsonConvert.DeserializeObject(Encoding.UTF8.GetString(msg[1]));
                         //Console.WriteLine("Title={0} Data={1}", msgTitle, result.ToString());
                     }
