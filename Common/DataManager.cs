@@ -29,26 +29,26 @@ namespace Common
 
         public static void AddInstrument(QuikConnectionManager.StaticInstrument obj)
         {
-            try
+            if (Instruments.Any(k=> k.Id==obj.Id))
             {
-                var i=Instruments.First(k => k.Id == obj.Id);
-                log.Warn("Trying to add existing instrument Id={0} Code={1} Class={2} , current instrument Code={3} Class={4}",obj.Id,obj.Code,obj.Class,i.Code,i.Class);
+                //var i=Instruments.First(k => k.Id == obj.Id);
+                log.Warn("Trying to add existing instrument Id={0} Code={1} Class={2} ",obj.Id,obj.Code,obj.Class);
 
             }
-            catch (SystemException e)
+            else
             {
                 if (obj.InstrumentType == "Futures")
                 {
                     Entities.Instrument instr = new Entities.Instrument(obj.Id, obj.Code, obj.Class, Entities.InstrumentType.Futures, obj.BaseContract, obj.FullName);
                     instr.DaysToMate = obj.DaysToMate;
-                    instr.MaturityDate = Convert.ToDateTime(obj.MaturityDate);
+                    instr.MaturityDate = Convert.ToDateTime(obj.MaturityDate).Date;
                     Instruments.Add(instr);
                 }
                 else
                 {
                     Entities.Instrument instr = new Entities.Instrument(obj.Id, obj.Code, obj.Class, Entities.InstrumentType.Option, obj.FullName, obj.OptionType == "Call" ? Entities.OptionType.Call : Entities.OptionType.Put, obj.Strike, obj.BaseContract);
                     instr.DaysToMate = obj.DaysToMate;
-                    instr.MaturityDate = Convert.ToDateTime(obj.MaturityDate);
+                    instr.MaturityDate = Convert.ToDateTime(obj.MaturityDate).Date;
                     Instruments.Add(instr);
                 }
                 log.Trace("New instrument added Id={0} Code={1} Class={2}",obj.Id,obj.Code,obj.Class);

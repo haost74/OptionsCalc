@@ -9,10 +9,10 @@
         </Grid.RowDefinitions>
         <ToolBar Name="toolBar1" Margin="-5,0,0,0">
             <Button Content="Connect" Height="23" Name="btnConnect" Width="75" Click="btnConnect_Click" />
-            <TextBox Height="23" Name="textBoxConnectionStatus" Width="120" Text="Disconnected" IsReadOnly="True" />
+            <Label Height="23" Name="labelConnectionStatus" Width="120" Content="Disconnected" />
         </ToolBar>
         <TabControl Grid.Row="1" Name="tabControl1" Height="Auto">
-            <TabItem Header="Option Desk" Name="tabODesk">
+            <TabItem Header="All Instruments" Name="tabAllInstruments">
                 <DataGrid Name="dgrODesk" AutoGenerateColumns="False" Height="Auto" Width="Auto" IsReadOnly="True" ItemsSource="{Binding lstInstruments, Mode=OneWay}">
                     <DataGrid.Columns>
                         <DataGridTextColumn Binding="{Binding Code, StringFormat=\{0:F4\}}" Header="Code"/>
@@ -41,27 +41,35 @@
                     </DataGrid>
                 </StackPanel>
             </TabItem>
-            <TabItem Header="test" Name="tabTest">
-                <StackPanel Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Stretch">
-                    <DataGrid Name="dgrTest"  AutoGenerateColumns="False" Height="Auto" Width="Auto" ItemsSource="{Binding lstTest }"  >
+            <TabItem Header="Options Desk" Name="tabDesc">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="28"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <Label Grid.Row="0" Content="Base Contract" HorizontalAlignment="Left" />
+                    <ComboBox Name="comboBoxBaseContract" IsReadOnly="True" IsSynchronizedWithCurrentItem="True" HorizontalAlignment="Left" Margin="83,0,0,0" Width="99" ItemsSource="{Binding listBaseContract}"/>
+                    <Label Content="Maturity Date" Margin="188,2,0,214" Width="83" Grid.RowSpan="2" HorizontalAlignment="Left" />
+                    <ComboBox Name="comboBoxMatDate" IsSynchronizedWithCurrentItem="True" Margin="277,0,202,0" Width="129" HorizontalAlignment="Left" ItemsSource="{Binding ElementName=comboBoxBaseContract, Path=SelectedItem.Content}"/>
+                    <Button Name="btnRefreshDesc" Content="Show" HorizontalAlignment="Left" Margin="460,-1,0,1" Width="62" Click="btnRefreshDesc_Click" />
+                    <DataGrid Name="dgrDesc" Grid.Row="1" AutoGenerateColumns="False" Height="Auto" Width="Auto" ItemsSource="{Binding lstDesc }"  >
                         <DataGrid.Columns>
-                            <DataGridTextColumn Binding="{Binding Call.BestAsk, StringFormat=\{0:F4\}}" Header="Call Ask"/>
-                            <DataGridTextColumn Binding="{Binding Call.BestAskVolume, StringFormat=\{0:F4\}}" Header="Call Ask Volume"/>
-                            <DataGridTextColumn Binding="{Binding Call.BestBid, StringFormat=\{0:F4\}}" Header="Call Bid"/>
-                            <DataGridTextColumn Binding="{Binding Call.BestBidVolume, StringFormat=\{0:F4\}}" Header="Call Bid Volume"/>
-                            <DataGridTextColumn Binding="{Binding Call.LastPrice, StringFormat=\{0:F4\}}" Header="Call Last"/>
-                            <DataGridTextColumn Binding="{Binding Call.Volatility, StringFormat=\{0:F4\}}" Header="Call Volatility"/>
-                            <DataGridTextColumn Binding="{Binding Strike}" Header="Strike"/>
-                            <DataGridTextColumn Binding="{Binding MaturityDate}" Header="Mat Date"/>
-                            <DataGridTextColumn Binding="{Binding Put.Volatility, StringFormat=\{0:F4\}}" Header="Put Volatility"/>
-                            <DataGridTextColumn Binding="{Binding Put.LastPrice, StringFormat=\{0:F4\}}" Header="Put Last"/>
-                            <DataGridTextColumn Binding="{Binding Put.BestBidVolume, StringFormat=\{0:F4\}}" Header="Put Bid Volume"/>
-                            <DataGridTextColumn Binding="{Binding Put.BestBid, StringFormat=\{0:F4\}}" Header="Put Bid"/>
-                            <DataGridTextColumn Binding="{Binding Put.BestAskVolume, StringFormat=\{0:F4\}}" Header="Put Ask Volume"/>
-                            <DataGridTextColumn Binding="{Binding Put.BestAsk, StringFormat=\{0:F4\}}" Header="Put Ask"/>
+                            <DataGridTextColumn Binding="{Binding Call.BestAsk,Mode=OneWay, StringFormat=\{0:F4\}}" Header="Call Ask"/>
+                            <DataGridTextColumn Binding="{Binding Call.BestAskVolume,Mode=OneWay, StringFormat=\{0:F4\}}" Header="Call Ask Volume"/>
+                            <DataGridTextColumn Binding="{Binding Call.BestBid,Mode=OneWay, StringFormat=\{0:F4\}}" Header="Call Bid"/>
+                            <DataGridTextColumn Binding="{Binding Call.BestBidVolume,Mode=OneWay, StringFormat=\{0:F4\}}" Header="Call Bid Volume"/>
+                            <DataGridTextColumn Binding="{Binding Call.LastPrice,Mode=OneWay, StringFormat=\{0:F4\}}" Header="Call Last"/>
+                            <DataGridTextColumn Binding="{Binding Call.Volatility,Mode=OneWay, StringFormat=\{0:F4\}}" Header="Volatility"/>
+                            <DataGridTextColumn Binding="{Binding Strike,Mode=OneWay}" Header="Strike"/>
+                            <DataGridTextColumn Binding="{Binding MaturityDate.Date,Mode=OneWay, StringFormat=d}" Header="Mat Date"/>
+                            <DataGridTextColumn Binding="{Binding Put.LastPrice,Mode=OneWay, StringFormat=\{0:F4\}}" Header="Put Last"/>
+                            <DataGridTextColumn Binding="{Binding Put.BestBidVolume,Mode=OneWay, StringFormat=\{0:F4\}}" Header="Put Bid Volume"/>
+                            <DataGridTextColumn Binding="{Binding Put.BestBid,Mode=OneWay, StringFormat=\{0:F4\}}" Header="Put Bid"/>
+                            <DataGridTextColumn Binding="{Binding Put.BestAskVolume,Mode=OneWay, StringFormat=\{0:F4\}}" Header="Put Ask Volume"/>
+                            <DataGridTextColumn Binding="{Binding Put.BestAsk,Mode=OneWay, StringFormat=\{0:F4\}}" Header="Put Ask"/>
                         </DataGrid.Columns>
                     </DataGrid>
-                </StackPanel>
+                </Grid>
             </TabItem>
 
         </TabControl>

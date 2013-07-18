@@ -27,9 +27,13 @@ namespace OptionsCalcWPF
     {
         BindingList<Entities.Portfolio> lstPortfolios;
         BindingList<Entities.Instrument> lstInstruments;
-        BindingList<ViewModel.DeskViewModel> lstTest; 
+        BindingList<ViewModel.DeskViewModel> allViewModels;
+        BindingList<ViewModel.DeskViewModel> lstDesc;
+        List<string> listBaseContract;
+        Dictionary<string, List<DateTime>> MatDates2BaseContracts;
         Thread dataThread;
         Logger mainLog;
+        private bool _IsConnected=false;
 
         public MainWindow()
         {
@@ -37,15 +41,14 @@ namespace OptionsCalcWPF
             mainLog = LogManager.GetLogger("Main");
         }
 
-
-
         private void ConnectionManager_OnConnected(string obj)
         {
-            textBoxConnectionStatus.Dispatcher.Invoke(System.Windows.Threading.DispatcherPriority.Normal,
+            labelConnectionStatus.Dispatcher.Invoke(System.Windows.Threading.DispatcherPriority.Normal,
                 new Action(
                     delegate()
                     {
-                        textBoxConnectionStatus.Text = "Connected";
+                        _IsConnected = true;
+                        labelConnectionStatus.Content = "Connected";
                         mainLog.Info("Connected to datastream");
                         dgrODesk.Items.Refresh();
                         foreach (var i in lstInstruments)
@@ -53,7 +56,23 @@ namespace OptionsCalcWPF
                             if (i.Type == Entities.InstrumentType.Option && i.OptionType==Entities.OptionType.Call)
                             {
                                 var t = lstInstruments.First(k => k.Strike == i.Strike && k.OptionType == Entities.OptionType.Put && k.BaseContract == i.BaseContract && k.DaysToMate==i.DaysToMate);
-                                lstTest.Add(new ViewModel.DeskViewModel(i,t,(double)i.Strike,(DateTime)i.MaturityDate));
+                                allViewModels.Add(new ViewModel.DeskViewModel(i,t,(double)i.Strike,(DateTime)i.MaturityDate));
+                                if (!listBaseContract.Any(k => k == i.BaseContract))
+                                {
+                                    listBaseContract.Add(i.BaseContract);
+                                }
+                                if (!MatDates2BaseContracts.ContainsKey(i.BaseContract))
+                                {
+                                    MatDates2BaseContracts.Add(i.BaseContract, new List<DateTime>());
+                                    MatDates2BaseContracts[i.BaseContract].Add((DateTime)i.MaturityDate);
+                                }
+                                else
+                                {
+                                    if (!MatDates2BaseContracts[i.BaseContract].Any(k => k == i.MaturityDate))
+                                    {
+                                        MatDates2BaseContracts[i.BaseContract].Add((DateTime)i.MaturityDate);
+                                    }
+                                }
                             }
                         }
                     }
@@ -69,7 +88,7 @@ namespace OptionsCalcWPF
 
         private void btnConnect_Click(object sender, RoutedEventArgs e)
         {
-            if (textBoxConnectionStatus.Text == "Disconnected")
+            if (!_IsConnected)
             {
                 mainLog.Info("Try to Connect to datastream");
                 btnConnect.Content = "Disconnect";
@@ -78,12 +97,12 @@ namespace OptionsCalcWPF
                 //ConnectionManager.Connect();
             }
 
-            if (textBoxConnectionStatus.Text == "Connected")
+            if (_IsConnected)
             {
                 mainLog.Info("Try to Disconnect from datastream");
                 btnConnect.Content = "Connect";
                 ConnectionManager.Disconect();
-                textBoxConnectionStatus.Text = "Disconnected";
+                labelConnectionStatus.Content = "Disconnected";
             }
         }
 
@@ -94,7 +113,10 @@ namespace OptionsCalcWPF
                 DataManager.Init();
                 lstPortfolios = new BindingList<Entities.Portfolio>(DataManager.Portfolios);
                 lstInstruments = new BindingList<Entities.Instrument>(DataManager.Instruments);
-                lstTest=new BindingList<ViewModel.DeskViewModel>();
+                lstDesc = new BindingList<ViewModel.DeskViewModel>();
+                allViewModels = new BindingList<ViewModel.DeskViewModel>();
+                listBaseContract = new List<string>();
+                MatDates2BaseContracts=new Dictionary<string,List<DateTime>>();
 
                 ConnectionManager.OnAccount += DataManager.UpdateAccount;
                 ConnectionManager.OnNewInstrument += DataManager.AddInstrument;
@@ -104,12 +126,24 @@ namespace OptionsCalcWPF
 
                 dgrPortfolios.ItemsSource = lstPortfolios;
                 dgrODesk.ItemsSource = lstInstruments;
-                dgrTest.ItemsSource = lstTest;
+                dgrDesc.ItemsSource = lstDesc;
+                comboBoxBaseContract.ItemsSource = listBaseContract;
+                //string a = comboBoxBaseContract.SelectedItem;
+                //ComboBoxItem itm = (ComboBoxItem)comboBoxBaseContract.SelectedItem;
+                //comboBoxMatDate.ItemsSource = comboBoxBaseContract.SelectedItem.Content;
+                //comboBoxMatDate.ItemsSource = MatDates2BaseContracts[comboBoxBaseContract.Text];
+                //comboBoxMatDate.DisplayMemberPath = MatDates2BaseContracts[comboBoxBaseContract.SelectedValue];
+                
             }
             catch (Exception exp)
             {
                 mainLog.Error("Error on DataManager or ConnectionManager initialization {0}",exp.Message);
             }
+        }
+
+        private void btnRefreshDesc_Click(object sender, RoutedEventArgs e)
+        {
+
         }
 
     }
