@@ -11,6 +11,7 @@ namespace QuikConnectionManager
     {
         
         static volatile bool _isConnected;
+        private static TimeSpan _connectionTimeout = new TimeSpan(0, 0, 10);
         public static void Disconect() { _isConnected = false; }
         public static void Connect()
         {
@@ -19,22 +20,22 @@ namespace QuikConnectionManager
                 using (ZmqSocket req = context.CreateSocket(SocketType.REQ), subscriber = context.CreateSocket(SocketType.SUB))
                 {
                     //Console.WriteLine("Aplication started");
-                    //Console.WriteLine("Bind Request socket ");
-                    var ts = new System.TimeSpan(0, 0, 30);
-                    try
-                    {
-                        req.Connect("tcp://10.1.1.102:5562");
-                        subscriber.Connect("tcp://10.1.1.102:5563");
-                        subscriber.SubscribeAll();
-                        req.Send(Encoding.UTF8.GetBytes("Hello"));
-                        var syncmsg = req.Receive(Encoding.UTF8);
+                    //Console.WriteLine("Bind Request socket ")
+
+                    req.Connect("tcp://10.1.1.102:5562");
+                    subscriber.Connect("tcp://10.1.1.102:5563");
+                    subscriber.SubscribeAll();
+                    req.Send(Encoding.UTF8.GetBytes("Hello"));
+                    var syncmsg = ZeroMQ.SendReceiveExtensions.Receive(req, Encoding.UTF8, _connectionTimeout);
+                       //Receive(Encoding.UTF8,_connectionTimeout);
+                    if (syncmsg != null)
                         _isConnected = true;
-                        
-                    }
-                    catch (Exception e)
+                    else
                     {
-                        throw e;
+                        NotifyOnError("Can`t connect to data server");
                     }
+                        
+
                     while(_isConnected)
                     {
                         ZmqMessage msg=new ZmqMessage();
@@ -68,12 +69,16 @@ namespace QuikConnectionManager
                                 break;
                             default: throw new Exception("Unknown message title");   
                         }
-                        
+                        req.Disconnect("tcp://10.1.1.102:5562");
+                        subscriber.Disconnect("tcp://10.1.1.102:5563");
+                        req.Close();
+                        subscriber.Close();
                         //Object obj = JsonConvert.DeserializeObject(Encoding.UTF8.GetString(msg[1]));
                         //Console.WriteLine("Title={0} Data={1}", msgTitle, result.ToString());
                     }
                 }
-                
+                context.Terminate();
+                context.Dispose();
             }
         }
  
@@ -83,6 +88,11 @@ namespace QuikConnectionManager
         public static event Action<Account> OnAccount;
         public static event Action<Position> OnPosition;
         public static event Action<string> OnConnected;
+        public static event Action<string> OnError;
+        private static void NotifyOnError(string msg)
+        {
+            if (OnError != null) OnError(msg);
+        }
         private static void NotifyOnNewInstrument(StaticInstrument arg)
         {
             if (OnNewInstrument != null) OnNewInstrument(arg);

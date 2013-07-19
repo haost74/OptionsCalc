@@ -14,6 +14,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.ComponentModel;
 using System.Windows.Threading;
+using System.Threading.Tasks;
 using Common;
 using QuikConnectionManager;
 using NLog;
@@ -33,6 +34,7 @@ namespace OptionsCalcWPF
         
         Dictionary<string, List<DateTime>> MatDates2BaseContracts;
         Thread dataThread;
+        Task connectionTask;
         Logger mainLog;
         private bool _IsConnected=false;
 
@@ -93,8 +95,24 @@ namespace OptionsCalcWPF
             {
                 mainLog.Info("Try to Connect to datastream");
                 btnConnect.Content = "Disconnect";
-                dataThread = new Thread(ConnectionManager.Connect);
-                dataThread.Start();
+                labelConnectionStatus.Content = "Trying to Connect to data server";
+                try
+                {
+                    //connectionTask = new Task(ConnectionManager.Connect);
+                    //connectionTask.ContinueWith(ExeptionHandler, TaskContinuationOptions.OnlyOnFaulted);
+                    //var c = new CancellationTokenSource();
+                    //CancellationToken ct = c.Token;
+                    //connectionTask.Start();
+                    dataThread = new Thread(ConnectionManager.Connect);
+                    dataThread.Start();
+                    
+                }
+                catch (Exception ex)
+                {
+                    mainLog.Error(ex.Message);
+                    labelConnectionStatus.Content = ex.Message;
+
+                }
                 //ConnectionManager.Connect();
             }
 
@@ -125,6 +143,7 @@ namespace OptionsCalcWPF
                 ConnectionManager.OnInstrument += DataManager.UpdateInstrument;
                 ConnectionManager.OnPosition += DataManager.UpdatePosition;
                 ConnectionManager.OnConnected += new Action<string>(ConnectionManager_OnConnected);
+                ConnectionManager.OnError += new Action<string>(ConnectionManager_OnError);
 
                 dgrPortfolios.ItemsSource = lstPortfolios;
                 //dgrODesk.ItemsSource = lstInstruments;
@@ -139,6 +158,24 @@ namespace OptionsCalcWPF
             {
                 mainLog.Error("Error on DataManager or ConnectionManager initialization {0}",exp.Message);
             }
+        }
+
+        void ConnectionManager_OnError(string obj)
+        {
+            this.Dispatcher.Invoke(System.Windows.Threading.DispatcherPriority.Normal,
+                new Action(
+                    delegate()
+                    {
+                        mainLog.Error(obj);
+                        btnConnect.Content = "Connect";
+                        labelConnectionStatus.Content = obj;
+                        dataThread.Abort();
+                        
+                        //var st = connectionTask.Status;
+                        //connectionTask.Dispose();
+                    }
+                    ));
+            
         }
 
         private void btnRefreshDesc_Click(object sender, RoutedEventArgs e)
@@ -177,5 +214,12 @@ namespace OptionsCalcWPF
             }
         }
 
+
+        private void ExeptionHandler(Task task)
+        {
+            var exp = task.Exception;
+            mainLog.Error(exp.Message);
+            labelConnectionStatus.Content = exp.Message;
+        }
     }
 }

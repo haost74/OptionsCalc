@@ -4,13 +4,13 @@
         Title="OptionsCalculator" Height="343" Width="640" HorizontalContentAlignment="Right" Name="OptionsCalculator" Closed="OptionsCalculator_Closed" Loaded="OptionsCalculator_Loaded">
     <Grid >
         <Grid.RowDefinitions>
-            <RowDefinition Height="28"/>
+            <RowDefinition Height="30"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
-        <ToolBar Name="toolBar1" Margin="-5,0,0,0">
-            <Button Content="Connect" Height="23" Name="btnConnect" Width="75" Click="btnConnect_Click" />
-            <Label Height="23" Name="labelConnectionStatus" Width="120" Content="Disconnected" />
-        </ToolBar>
+        
+            <Button Grid.Row="0" Content="Connect" Height="23" Name="btnConnect" Width="75" Click="btnConnect_Click" HorizontalAlignment="Left" />
+            <Label Height="30" Name="labelConnectionStatus" Width="238" Content="Disconnected" HorizontalAlignment="Left" Margin="92,2,0,2" />
+        
         <TabControl Grid.Row="1" Name="tabControl1" Height="Auto">
             <TabItem Header="All Instruments" Name="tabAllInstruments">
                 <DataGrid Name="dgrODesk" AutoGenerateColumns="False" Height="Auto" Width="Auto" IsReadOnly="True" ItemsSource="{Binding lstInstruments, Mode=OneWay}">
@@ -30,13 +30,13 @@
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Stretch">
                     <DataGrid Name="dgrPortfolios"  AutoGenerateColumns="False" Height="Auto" Width="Auto" ItemsSource="{Binding lstPortfolios }"  >
                         <DataGrid.Columns>
-                            <DataGridTextColumn Binding="{Binding Name}" Header="Portfolio Name"/>
-                            <DataGridTextColumn Binding="{Binding BaseId}" Header="BaseContract"/>
-                            <DataGridTextColumn Binding="{Binding Delta, StringFormat=\{0:F4\}}" Header="Delta"/>
-                            <DataGridTextColumn Binding="{Binding Gamma, StringFormat=\{0:F4\}}" Header="Gamma"/>
-                            <DataGridTextColumn Binding="{Binding Vega, StringFormat=\{0:F4\}}" Header="Vega"/>
-                            <DataGridTextColumn Binding="{Binding Thetha, StringFormat=\{0:F4\}}" Header="Thetha"/>
-                            <DataGridTextColumn Binding="{Binding Rho, StringFormat=\{0:F4\}}" Header="Rho"/>
+                            <DataGridTextColumn Binding="{Binding Account, Mode=OneWay}" Header="Account"/>
+                            <DataGridTextColumn Binding="{Binding BaseCode, Mode=OneWay}" Header="BaseContract"/>
+                            <DataGridTextColumn Binding="{Binding Delta, StringFormat=\{0:F4\}, Mode=OneWay}" Header="Delta"/>
+                            <DataGridTextColumn Binding="{Binding Gamma, StringFormat=\{0:F4\}, Mode=OneWay}" Header="Gamma"/>
+                            <DataGridTextColumn Binding="{Binding Vega, StringFormat=\{0:F4\}, Mode=OneWay}" Header="Vega"/>
+                            <DataGridTextColumn Binding="{Binding Thetha, StringFormat=\{0:F4\}, Mode=OneWay}" Header="Thetha"/>
+                            <DataGridTextColumn Binding="{Binding Rho, StringFormat=\{0:F4\}, Mode=OneWay}" Header="Rho"/>
                         </DataGrid.Columns>
                     </DataGrid>
                 </StackPanel>

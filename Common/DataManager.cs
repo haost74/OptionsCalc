@@ -89,47 +89,58 @@ namespace Common
 
         public static void UpdatePosition(QuikConnectionManager.Position obj)
         {
-            try
+            if(Positions.Any(k=>k.AccountName==obj.AccountName && k.Instrument.Code==obj.SecurityCode))
             {
                 Entities.Position p = Positions.First(k => k.AccountName == obj.AccountName && k.Instrument.Code == obj.SecurityCode);
                 p.TotalNet = obj.TotalNet; 
             }
-            catch (SystemException ex)
+            else
             {
-                var pos = new Entities.Position(obj.AccountName, Instruments.First(k => k.Code == obj.SecurityCode), obj.TotalNet, 0, 0);
-                Positions.Add(pos);
-                log.Info("New position added. SecCode={0} Account={1}",obj.SecurityCode,obj.AccountName);
-                if(pos.Instrument.Type==Entities.InstrumentType.Futures )
+                Entities.Instrument instr;
+                try
                 {
-                    try
+                    instr = Instruments.First(k => k.Code == obj.SecurityCode);
+                    var pos = new Entities.Position(obj.AccountName, instr, obj.TotalNet, 0, 0);
+                    Positions.Add(pos);
+                    log.Info("New position added. SecCode={0} Account={1}", obj.SecurityCode, obj.AccountName);
+                    if (pos.Instrument.Type == Entities.InstrumentType.Futures)
                     {
-                        Portfolios.First(k => k.BaseCode == pos.Instrument.Code).Positions.Add(pos);
-                        log.Info("Futures Position added to existing portfolio.");
+                        if(Portfolios.Any(k=>k.BaseCode==pos.Instrument.Code))
+                        {
+                            Portfolios.First(k => k.BaseCode == pos.Instrument.Code).Positions.Add(pos);
+                            log.Info("Futures Position added to existing portfolio.");
+                        }
+                        else
+                        {   // create new portfolio
+                            Entities.Portfolio port = new Entities.Portfolio(pos.Instrument.Code, pos.AccountName);
+                            port.Positions.Add(pos);
+                            Portfolios.Add(port);
+                            log.Info("New portfolio created. Name={0} Base={1} Account={2}", port.Name, port.BaseCode, port.Account);
+                        }
+
                     }
-                    catch (SystemException ex1)
-                    {   // create new portfolio
-                        Entities.Portfolio port = new Entities.Portfolio(pos.Instrument.Code, pos.AccountName);
-                        port.Positions.Add(pos);
-                        Portfolios.Add(port);
-                        log.Info("New portfolio created. Name={0} Base={1} Account={2}",port.Name,port.BaseCode,port.Account);
+                    else if (pos.Instrument.Type == Entities.InstrumentType.Option)
+                    {
+                        if(Portfolios.Any(k=> k.BaseCode==pos.Instrument.BaseContract))
+                        {
+                            Portfolios.First(k => k.BaseCode == pos.Instrument.BaseContract).Positions.Add(pos);
+                            log.Info("Option Position added to existing portfolio.");
+                        }
+                        else
+                        {   // create new portfolio
+                            Entities.Portfolio port = new Entities.Portfolio(pos.Instrument.BaseContract, pos.AccountName);
+                            port.Positions.Add(pos);
+                            Portfolios.Add(port);
+                            log.Info("New portfolio created. Name={0} Base={1} Account={2}", port.Name, port.BaseCode, port.Account);
+                        }
                     }
-                    
                 }
-                else if (pos.Instrument.Type == Entities.InstrumentType.Option)
+                catch (SystemException exep)
                 {
-                    try
-                    {
-                        Portfolios.First(k => k.BaseCode == pos.Instrument.BaseContract).Positions.Add(pos);
-                        log.Info("Option Position added to existing portfolio.");
-                    }
-                    catch (SystemException ex2)
-                    {   // create new portfolio
-                        Entities.Portfolio port = new Entities.Portfolio(pos.Instrument.BaseContract, pos.AccountName);
-                        port.Positions.Add(pos);
-                        Portfolios.Add(port);
-                        log.Info("New portfolio created. Name={0} Base={1} Account={2}", port.Name, port.BaseCode, port.Account);
-                    }
-                }   
+                    log.Error("Try to add position for unknown instrument {0} {1} {2}",obj.SecurityCode,obj.AccountName,obj.TotalNet);
+                    log.Error(exep.Message);
+                }
+                   
             }
         }
 

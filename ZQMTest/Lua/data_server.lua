@@ -12,6 +12,7 @@ instruments={}
 accounts={}
 positions={}
 positions_keys={}
+accounts_list=""
 is_connected=false
 local sfind=string.find
 FUT_OPT_CLASSES="FUTUX,SPBFUT,OPTUX,SPBOPT"
@@ -103,11 +104,10 @@ function OnInitDo()
 	id=1
 	for i=1,getNumberOf('trade_accounts') do
 		local itm=getItem('trade_accounts',i)
-		if (sf(itm.class_codes,'FUTUX')~=nil or sf(itm.class_codes,'OPTUX')~=nil or sf(itm.class_codes,'SPBFUT')~=nil or sf(itm.class_codes,'SPBOPT')~=nil ) then
+		if ((sf(account_list,itm.trdaccid)==nil) and (sf(itm.class_codes,'FUTUX')~=nil or sf(itm.class_codes,'OPTUX')~=nil or sf(itm.class_codes,'SPBFUT')~=nil or sf(itm.class_codes,'SPBOPT')~=nil )) then
 			accounts[#accounts+1]={['Name']=itm.trdaccid,['Id']=id}
-			--accounts[#accounts].Name=itm.trdaccid
-			--accounts[#accounts].Id=id
 			id=id+1
+			account_list=accountListt..','..itm.trdaccid
 		end
 	end
 	for i=1,getNumberOf('futures_client_holding') do
