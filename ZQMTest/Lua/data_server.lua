@@ -111,7 +111,7 @@ function OnInitDo()
 		end
 	end
 	for i=1,getNumberOf('futures_client_holding') do
-		local itm=getItem('futures_client_holding')
+		local itm=getItem('futures_client_holding',i)
 		positions[#positions+1]={
 			['AccountName']=itm.trdaccid,
 			['SecurityCode']=itm.sec_code,

@@ -28,8 +28,9 @@ namespace OptionsCalcWPF
         BindingList<Entities.Portfolio> lstPortfolios;
         BindingList<Entities.Instrument> lstInstruments;
         BindingList<ViewModel.DeskViewModel> allViewModels;
-        BindingList<ViewModel.DeskViewModel> lstDesc;
+        MySortableBindingList<ViewModel.DeskViewModel> lstDesc;
         List<string> listBaseContract;
+        
         Dictionary<string, List<DateTime>> MatDates2BaseContracts;
         Thread dataThread;
         Logger mainLog;
@@ -113,10 +114,11 @@ namespace OptionsCalcWPF
                 DataManager.Init();
                 lstPortfolios = new BindingList<Entities.Portfolio>(DataManager.Portfolios);
                 lstInstruments = new BindingList<Entities.Instrument>(DataManager.Instruments);
-                lstDesc = new BindingList<ViewModel.DeskViewModel>();
+                lstDesc = new MySortableBindingList<ViewModel.DeskViewModel>();
                 allViewModels = new BindingList<ViewModel.DeskViewModel>();
                 listBaseContract = new List<string>();
                 MatDates2BaseContracts=new Dictionary<string,List<DateTime>>();
+                
 
                 ConnectionManager.OnAccount += DataManager.UpdateAccount;
                 ConnectionManager.OnNewInstrument += DataManager.AddInstrument;
@@ -125,14 +127,12 @@ namespace OptionsCalcWPF
                 ConnectionManager.OnConnected += new Action<string>(ConnectionManager_OnConnected);
 
                 dgrPortfolios.ItemsSource = lstPortfolios;
-                dgrODesk.ItemsSource = lstInstruments;
+                //dgrODesk.ItemsSource = lstInstruments;
+                dgrDesc.CanUserSortColumns = true;
                 dgrDesc.ItemsSource = lstDesc;
+                
                 comboBoxBaseContract.ItemsSource = listBaseContract;
-                //string a = comboBoxBaseContract.SelectedItem;
-                //ComboBoxItem itm = (ComboBoxItem)comboBoxBaseContract.SelectedItem;
-                //comboBoxMatDate.ItemsSource = comboBoxBaseContract.SelectedItem.Content;
-                //comboBoxMatDate.ItemsSource = MatDates2BaseContracts[comboBoxBaseContract.Text];
-                //comboBoxMatDate.DisplayMemberPath = MatDates2BaseContracts[comboBoxBaseContract.SelectedValue];
+                
                 
             }
             catch (Exception exp)
@@ -143,7 +143,38 @@ namespace OptionsCalcWPF
 
         private void btnRefreshDesc_Click(object sender, RoutedEventArgs e)
         {
+            //object date=comboBoxMatDate.SelectedItem;
+            lstDesc.Clear();
+            DateTime d = Convert.ToDateTime(comboBoxMatDate.SelectedItem.ToString());
+            string basec=comboBoxBaseContract.SelectedItem.ToString();
+            var lst = allViewModels.Where(k => k.MaturityDate == d && k.Call.BaseContract==basec);
+            foreach (var elem in lst)
+            {
+                lstDesc.Add(elem);
+            }
+            
+            dgrDesc.Items.Refresh();
+        }
 
+        private void comboBoxBaseContract_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            try
+            {
+                
+                var ind = comboBoxBaseContract.SelectedIndex;
+                
+                if (ind!=-1 && ind!=0)
+                {
+                    var basec = comboBoxBaseContract.SelectedItem.ToString();
+                    Binding bind = new Binding();
+                    bind.Source = MatDates2BaseContracts[basec];
+                    comboBoxMatDate.SetBinding(ComboBox.ItemsSourceProperty, bind);
+                }
+            }
+            catch(SystemException ex)
+            {
+                mainLog.Error(ex.Message);
+            }
         }
 
     }

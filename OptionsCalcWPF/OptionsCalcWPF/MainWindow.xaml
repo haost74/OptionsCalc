@@ -48,9 +48,9 @@
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
                     <Label Grid.Row="0" Content="Base Contract" HorizontalAlignment="Left" />
-                    <ComboBox Name="comboBoxBaseContract" IsReadOnly="True" IsSynchronizedWithCurrentItem="True" HorizontalAlignment="Left" Margin="83,0,0,0" Width="99" ItemsSource="{Binding listBaseContract}"/>
+                    <ComboBox Name="comboBoxBaseContract" IsReadOnly="True" IsSynchronizedWithCurrentItem="True" HorizontalAlignment="Left" Margin="83,0,0,0" Width="99" ItemsSource="{Binding Source=listBaseContract}" SelectionChanged="comboBoxBaseContract_SelectionChanged" />
                     <Label Content="Maturity Date" Margin="188,2,0,214" Width="83" Grid.RowSpan="2" HorizontalAlignment="Left" />
-                    <ComboBox Name="comboBoxMatDate" IsSynchronizedWithCurrentItem="True" Margin="277,0,202,0" Width="129" HorizontalAlignment="Left" ItemsSource="{Binding ElementName=comboBoxBaseContract, Path=SelectedItem.Content}"/>
+                    <ComboBox Name="comboBoxMatDate" IsSynchronizedWithCurrentItem="True" Margin="277,0,202,0" Width="129" HorizontalAlignment="Left" />
                     <Button Name="btnRefreshDesc" Content="Show" HorizontalAlignment="Left" Margin="460,-1,0,1" Width="62" Click="btnRefreshDesc_Click" />
                     <DataGrid Name="dgrDesc" Grid.Row="1" AutoGenerateColumns="False" Height="Auto" Width="Auto" ItemsSource="{Binding lstDesc }"  >
                         <DataGrid.Columns>
@@ -60,7 +60,7 @@
                             <DataGridTextColumn Binding="{Binding Call.BestBidVolume,Mode=OneWay, StringFormat=\{0:F4\}}" Header="Call Bid Volume"/>
                             <DataGridTextColumn Binding="{Binding Call.LastPrice,Mode=OneWay, StringFormat=\{0:F4\}}" Header="Call Last"/>
                             <DataGridTextColumn Binding="{Binding Call.Volatility,Mode=OneWay, StringFormat=\{0:F4\}}" Header="Volatility"/>
-                            <DataGridTextColumn Binding="{Binding Strike,Mode=OneWay}" Header="Strike"/>
+                            <DataGridTextColumn Binding="{Binding Strike,Mode=OneWay}" SortDirection="Descending" Header="Strike"/>
                             <DataGridTextColumn Binding="{Binding MaturityDate.Date,Mode=OneWay, StringFormat=d}" Header="Mat Date"/>
                             <DataGridTextColumn Binding="{Binding Put.LastPrice,Mode=OneWay, StringFormat=\{0:F4\}}" Header="Put Last"/>
                             <DataGridTextColumn Binding="{Binding Put.BestBidVolume,Mode=OneWay, StringFormat=\{0:F4\}}" Header="Put Bid Volume"/>

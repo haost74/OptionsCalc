@@ -23,8 +23,8 @@ namespace QuikConnectionManager
                     var ts = new System.TimeSpan(0, 0, 30);
                     try
                     {
-                        req.Connect("tcp://127.0.0.1:5562");
-                        subscriber.Connect("tcp://127.0.0.1:5563");
+                        req.Connect("tcp://10.1.1.102:5562");
+                        subscriber.Connect("tcp://10.1.1.102:5563");
                         subscriber.SubscribeAll();
                         req.Send(Encoding.UTF8.GetBytes("Hello"));
                         var syncmsg = req.Receive(Encoding.UTF8);
