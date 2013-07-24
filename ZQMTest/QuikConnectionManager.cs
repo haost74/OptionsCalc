@@ -11,6 +11,8 @@ namespace QuikConnectionManager
     {
         
         static volatile bool _isConnected;
+        private static string _requestConnectionString = "tcp://10.1.1.108:5562";
+        private static string _subscribeConnectionString = "tcp://10.1.1.108:5563";
         private static TimeSpan _connectionTimeout = new TimeSpan(0, 0, 10);
         public static void Disconect() { _isConnected = false; }
         public static void Connect()
@@ -22,8 +24,8 @@ namespace QuikConnectionManager
                     //Console.WriteLine("Aplication started");
                     //Console.WriteLine("Bind Request socket ")
 
-                    req.Connect("tcp://10.1.1.102:5562");
-                    subscriber.Connect("tcp://10.1.1.102:5563");
+                    req.Connect(_requestConnectionString);
+                    subscriber.Connect(_subscribeConnectionString);
                     subscriber.SubscribeAll();
                     req.Send(Encoding.UTF8.GetBytes("Hello"));
                     var syncmsg = ZeroMQ.SendReceiveExtensions.Receive(req, Encoding.UTF8, _connectionTimeout);
@@ -42,40 +44,48 @@ namespace QuikConnectionManager
                         try
                         {
                             msg = subscriber.ReceiveMessage();
+                            string msgTitle = Encoding.UTF8.GetString(msg[0]);
+                            //object result;
+                            switch (msgTitle)
+                            {
+                                case "COMMON":
+                                    NotifyOnInitialDataLoaded(Encoding.UTF8.GetString(msg[1]));
+                                    break;
+                                case "NEWINSTRUMENT":
+                                    NotifyOnNewInstrument(JsonConvert.DeserializeObject<StaticInstrument>(Encoding.UTF8.GetString(msg[1])));
+                                    break;
+                                case "NEWACCOUNT":
+                                    NotifyOnNewAccount(JsonConvert.DeserializeObject<Account>(Encoding.UTF8.GetString(msg[1])));
+                                    break;
+                                case "INSTRUMENT":
+                                    NotifyOnInstrument(JsonConvert.DeserializeObject<DynamicInstrument>(Encoding.UTF8.GetString(msg[1])));
+                                    break;
+                                case "POSITION":
+                                    NotifyOnPosition(JsonConvert.DeserializeObject<Position>(Encoding.UTF8.GetString(msg[1])));
+                                    break;
+                                case "NEWPOSITION":
+                                    NotifyOnNewPosition(JsonConvert.DeserializeObject<Position>(Encoding.UTF8.GetString(msg[1])));
+                                    break;
+                                case "ACCOUNT":
+                                    NotifyOnAccount(JsonConvert.DeserializeObject<Account>(Encoding.UTF8.GetString(msg[1])));
+                                    break;
+                                default: throw new Exception("Unknown message title");
+                            }
                         }
-                        catch (Exception e)
+                        catch (SystemException e)
                         {
-                            Console.WriteLine(e.ToString());
+                            Console.Write(e.Message);
                         }
-
-                        string msgTitle = Encoding.UTF8.GetString(msg[0]);
-                        //object result;
-                        switch (msgTitle)
-                        {
-                            case "COMMON":
-                                NotifyOnInitialDataLoaded(Encoding.UTF8.GetString(msg[1]));
-                                break;
-                            case "NEWINSTRUMENT": 
-                                NotifyOnNewInstrument(JsonConvert.DeserializeObject<StaticInstrument>(Encoding.UTF8.GetString(msg[1])));
-                                break;
-                            case "INSTRUMENT":
-                                NotifyOnInstrument(JsonConvert.DeserializeObject<DynamicInstrument>(Encoding.UTF8.GetString(msg[1])));
-                                break;
-                            case "POSITION":
-                                NotifyOnPosition(JsonConvert.DeserializeObject<Position>(Encoding.UTF8.GetString(msg[1])));
-                                break;
-                            case "ACCOUNT":
-                                NotifyOnAccount(JsonConvert.DeserializeObject<Account>(Encoding.UTF8.GetString(msg[1])));
-                                break;
-                            default: throw new Exception("Unknown message title");   
-                        }
-                        req.Disconnect("tcp://10.1.1.102:5562");
-                        subscriber.Disconnect("tcp://10.1.1.102:5563");
-                        req.Close();
-                        subscriber.Close();
+                        
+                        
+                        
                         //Object obj = JsonConvert.DeserializeObject(Encoding.UTF8.GetString(msg[1]));
                         //Console.WriteLine("Title={0} Data={1}", msgTitle, result.ToString());
                     }
+                    req.Disconnect(_requestConnectionString);
+                    subscriber.Disconnect(_subscribeConnectionString);
+                    req.Close();
+                    subscriber.Close();
                 }
                 context.Terminate();
                 context.Dispose();
@@ -85,8 +95,10 @@ namespace QuikConnectionManager
         #region Events
         public static event Action<StaticInstrument> OnNewInstrument;
         public static event Action<DynamicInstrument> OnInstrument;
+        public static event Action<Account> OnNewAccount;
         public static event Action<Account> OnAccount;
         public static event Action<Position> OnPosition;
+        public static event Action<Position> OnNewPosition;
         public static event Action<string> OnConnected;
         public static event Action<string> OnError;
         private static void NotifyOnError(string msg)
@@ -111,9 +123,20 @@ namespace QuikConnectionManager
                 OnAccount(a);
             }
         }
+        private static void NotifyOnNewAccount(Account a)
+        {
+            if (OnNewAccount != null)
+            {
+                OnNewAccount(a);
+            }
+        }
         private static void NotifyOnPosition(Position p)
         {
             if (OnPosition != null) OnPosition(p);
+        }
+        private static void NotifyOnNewPosition(Position p)
+        {
+            if (OnNewPosition != null) OnNewPosition(p);
         }
         private static void NotifyOnInitialDataLoaded(string arg)
         {
@@ -135,13 +158,14 @@ namespace QuikConnectionManager
         public string BaseContract { get; set; }
         public int DaysToMate { get; set; }
         public string MaturityDate { get; set; }
-        
+        public string BaseContractClass { get; set; }
     }
 
     [JsonObject]
     public class DynamicInstrument
     {
         public double LastPrice { get; set; }
+        public double SettlePrice { get; set; }
         public double Volatility { get; set; }
         public double TheorPrice { get; set; }
         public int Id { get; set; }
@@ -164,5 +188,8 @@ namespace QuikConnectionManager
         public string AccountName { get; set; }
         public string SecurityCode { get; set; }
         public int TotalNet { get; set; }
+        public int BuyQty { get; set; }
+        public int SellQty { get; set; }
+        public double VarMargin { get; set; }
     }
 }

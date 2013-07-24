@@ -45,7 +45,7 @@ namespace Common
 
         public static double CalculateDelta(Entities.OptionType type, double settleprice, double strike, double volatility, int daystomate, double risk_free)
         {
-            double pdaystomate = daystomate / YearLength;
+            double pdaystomate = (double)daystomate / YearLength;
             double d1=(Math.Log(settleprice/strike)+volatility*volatility*0.5*pdaystomate)/(volatility*Math.Sqrt(pdaystomate));
 
             if (type == Entities.OptionType.Call)
@@ -65,13 +65,13 @@ namespace Common
 
         public static double CalculateGamma(double settleprice, double strike, double volatility, int daystomate, double risk_free)
         {
-            double pdaystomate = daystomate / YearLength;
+            double pdaystomate = (double)daystomate / YearLength;
             return 100 * NormalDistributionDensity(Math.Log(settleprice / strike)) / (settleprice * volatility * Math.Sqrt(pdaystomate));
         }
 
         public static double CalculateVega(Entities.OptionType type, double settleprice, double strike, double volatility, int daystomate, double risk_free)
         {
-            double pdaystomate = daystomate / YearLength;
+            double pdaystomate = (double)daystomate / YearLength;
             double d1 = (Math.Log(settleprice / strike) + volatility * volatility * 0.5 * pdaystomate) / (volatility * Math.Sqrt(pdaystomate));
             
             return settleprice*NormalDistributionDensity(d1)*Math.Exp(-1*risk_free*pdaystomate)*Math.Sqrt(pdaystomate)/100;
@@ -80,7 +80,7 @@ namespace Common
 
         public static double CalculateThetha(Entities.OptionType type, double settleprice, double strike, double volatility, int daystomate, double risk_free)
         {
-            double pdaystomate = daystomate / YearLength;
+            double pdaystomate = (double)daystomate / YearLength;
             double d1 = (Math.Log(settleprice / strike) + volatility * volatility * 0.5 * pdaystomate) / (volatility * Math.Sqrt(pdaystomate));
             double temp = settleprice * Math.Exp(-1 * risk_free * pdaystomate);
             double d2 = d1 - volatility * Math.Sqrt(pdaystomate);
@@ -101,7 +101,7 @@ namespace Common
 
         public static double CalculateRho(Entities.OptionType type, double settleprice, double strike, double volatility, int daystomate, double risk_free)
         {
-            double pdaystomate = daystomate / YearLength;
+            double pdaystomate = (double)daystomate / YearLength;
             double d1 = (Math.Log(settleprice / strike) + volatility * volatility * 0.5 * pdaystomate) / (volatility * Math.Sqrt(pdaystomate));
             double d2 = d1 - volatility * Math.Sqrt(pdaystomate);
 

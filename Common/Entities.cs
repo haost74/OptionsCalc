@@ -19,7 +19,7 @@ namespace Common
         
         public class Instrument : INotifyPropertyChanged
         {
-            public Instrument(int id, string sec_code, string cl, InstrumentType type, string full_name, OptionType? o_type, double? strike, string basec)
+            public Instrument(int id, string sec_code, string cl, InstrumentType type, string full_name, OptionType? o_type, double? strike, string basec, string baseccl)
             {
                 this._Class = cl;
                 this._Code = sec_code;
@@ -28,12 +28,13 @@ namespace Common
                 this._Type = type;
                 this._OptionType = o_type ;
                 this._Strike = strike; 
-                this._BaseContract = basec; 
+                this._BaseContract = basec;
+                this._BaseContractClass = baseccl;
                 //this._LastPrice=0;
                 //this._DaysToMate=0;
                 //this._MaturityDate=new DateTime();
             }
-            public Instrument(int id, string sec_code, string cl, InstrumentType type, string basec, string full_name):this(id,sec_code,cl,type,full_name,null,null,basec)
+            public Instrument(int id, string sec_code, string cl, InstrumentType type, string basec, string baseccl,string full_name):this(id,sec_code,cl,type,full_name,null,null,basec, baseccl)
             { 
                 
             }
@@ -46,6 +47,7 @@ namespace Common
             private OptionType? _OptionType;
             private double? _Strike;
             private string _BaseContract;
+            private string _BaseContractClass;
             private double _LastPrice;
             private double? _Volatility;
             private int? _DaysToMate;
@@ -53,6 +55,7 @@ namespace Common
             private double? _TheorPrice;
             private double _BestBid;
             private int _BestBidVolume;
+            private double _SettlePrice; 
             private double _BestAsk;
             private int _BestAskVolume;
             #region Public Properties
@@ -107,6 +110,7 @@ namespace Common
             public string Code { get{return _Code;} }
             public string FullName { get { return _FullName; } }
             public string Class { get { return _Class; } }
+            public string BaseContractClass { get { return this._BaseContractClass; } }
             public string BaseContract { get { return _BaseContract; } }
             public int Id { get { return _Id; } }
             public InstrumentType Type { get { return _Type; } }
@@ -119,6 +123,18 @@ namespace Common
                     NotifyPropertyChanged("LastPrice");
                 }
             }}
+            public double SettlePrice
+            {
+                get { return this._SettlePrice; }
+                set
+                {
+                    if (value != this._SettlePrice)
+                    {
+                        this._SettlePrice = value;
+                        NotifyPropertyChanged("SettlePrice");
+                    }
+                }
+            }
             public double? Strike { get { return _Strike; } }
             public double? Volatility
             {
@@ -167,7 +183,7 @@ namespace Common
                     }
                     else if (this._Type == InstrumentType.Option && this._OptionType!=null)
                     {
-                        return Quant.CalculateDelta((Entities.OptionType)this._OptionType, this._LastPrice, (double)this._Strike, (double)this._Volatility, (int)this._DaysToMate, Quant.RiskFreeRate);
+                        return Quant.CalculateDelta((Entities.OptionType)this._OptionType, this._SettlePrice, (double)this._Strike, (double)this._Volatility, (int)this._DaysToMate, Quant.RiskFreeRate);
                     }
                     else return 0;
                 }
@@ -178,7 +194,7 @@ namespace Common
                 {
                     if (this._Type == InstrumentType.Option && this._OptionType!=null)
                     {
-                        return Quant.CalculateGamma(this._LastPrice, (double)this._Strike, (double)this._Volatility, (int)this._DaysToMate, Quant.RiskFreeRate);
+                        return Quant.CalculateGamma(this._SettlePrice, (double)this._Strike, (double)this._Volatility, (int)this._DaysToMate, Quant.RiskFreeRate);
                     }
                     else return 0;
                 }
@@ -189,7 +205,7 @@ namespace Common
                 {
                     if (this._Type == InstrumentType.Option && this._OptionType != null)
                     {
-                        return Quant.CalculateVega((Entities.OptionType)this._OptionType, this._LastPrice, (double)this._Strike, (double)this._Volatility, (int)this._DaysToMate, Quant.RiskFreeRate);
+                        return Quant.CalculateVega((Entities.OptionType)this._OptionType, this._SettlePrice, (double)this._Strike, (double)this._Volatility, (int)this._DaysToMate, Quant.RiskFreeRate);
                     }
                     else return 0;
                 }
@@ -200,7 +216,7 @@ namespace Common
                 {
                     if (this._Type == InstrumentType.Option && this._OptionType != null)
                     {
-                        return Quant.CalculateThetha((Entities.OptionType)this._OptionType, this._LastPrice, (double)this._Strike, (double)this._Volatility, (int)this._DaysToMate, Quant.RiskFreeRate);
+                        return Quant.CalculateThetha((Entities.OptionType)this._OptionType, this._SettlePrice, (double)this._Strike, (double)this._Volatility, (int)this._DaysToMate, Quant.RiskFreeRate);
                     }
                     else return 0;
                 }
@@ -211,7 +227,7 @@ namespace Common
                 {
                     if (this._Type == InstrumentType.Option && this._OptionType != null)
                     {
-                        return Quant.CalculateRho((Entities.OptionType)this._OptionType, this._LastPrice, (double)this._Strike, (double)this._Volatility, (int)this._DaysToMate, Quant.RiskFreeRate);
+                        return Quant.CalculateRho((Entities.OptionType)this._OptionType, this._SettlePrice, (double)this._Strike, (double)this._Volatility, (int)this._DaysToMate, Quant.RiskFreeRate);
                     }
                     else return 0;
                 }
@@ -220,6 +236,18 @@ namespace Common
             public override string ToString()
             {
                 return base.ToString();
+            }
+            public void Update(double LPrice, double Volat, double TPrice, double SPrice, double Ask, int AskVol, double Bid, int BidVol)
+            {
+                this._LastPrice = LPrice;
+                this._Volatility = Volat;
+                this._TheorPrice = TPrice;
+                this._BestAsk = Ask;
+                this._BestAskVolume = AskVol;
+                this._BestBid = Bid;
+                this._SettlePrice = SPrice;
+                this._BestBidVolume = BidVol;
+                NotifyPropertyChanged("All");
             }
             #region INotifyPropertyChange
             public event PropertyChangedEventHandler PropertyChanged;
@@ -258,24 +286,25 @@ namespace Common
         
         public class Position : INotifyPropertyChanged
         {
-            public Position(string accid, Instrument instr):this(accid,instr,0,0,0)
+            public Position(string accid, Instrument instr):this(accid,instr,0,0,0,0)
             {
              
             }
-            public Position(string accid, Instrument instrId, int tnet, int bq, int sq)
+            public Position(string accid, Instrument instrId, int tnet, int bq, int sq, double vm)
             {
                 this._InstrumentId = instrId;
                 this._AccountName = accid;
                 this.BuyQty = bq;
                 this.SellQty = sq;
                 this.TotalNet = tnet;
+                this._VM = vm;
             }
             private Instrument _InstrumentId;
             private string _AccountName;
             private int _TotalNet;
             private int _BuyQty;
             private int _SellQty;
-            
+            private double _VM;
 
             public int TotalNet
             {
@@ -299,6 +328,19 @@ namespace Common
                 }
             } }
 
+            public double VM
+            {
+                get { return this._VM; }
+                set
+                {
+                    if (value != this._VM)
+                    {
+                        this._VM = value;
+                        NotifyPropertyChanged();
+                    }
+                }
+            }
+
             public int SellQty { get { return this._SellQty; } set 
             {
                 if (value != this._SellQty)
@@ -309,7 +351,14 @@ namespace Common
             } }
 
             public Instrument Instrument { get { return this._InstrumentId; } }
-
+            public void Update(int Tnet, int Bqty, int Sqty, double varm)
+            {
+                this._TotalNet = Tnet;
+                this._BuyQty = Bqty;
+                this._SellQty = Sqty;
+                this._VM = varm;
+                NotifyPropertyChanged();
+            }
             public string AccountName { get { return this._AccountName; } }
 
             public override string ToString()
@@ -362,9 +411,10 @@ namespace Common
             private double _Rho;
             private string _BaseCode;
             private string _AccountId;
-            
+            private double _VM;
             private BindingList<Position> _Positions;
 
+            public double VM { get { return this._VM; } }
             public string Name { get; set; }
 
             public string BaseCode { get { return _BaseCode; } }
@@ -397,8 +447,10 @@ namespace Common
                 this._Rho = 0;
                 this._Thetha = 0;
                 this._Vega = 0;
-                foreach (Position pos in Positions)
+                this._VM = 0;
+                foreach (Position pos in _Positions)
                 {
+                    this._VM += pos.VM;
                     this._Delta += pos.TotalNet * pos.Instrument.Delta;
                     if (pos.Instrument.OptionType != null)
                     {

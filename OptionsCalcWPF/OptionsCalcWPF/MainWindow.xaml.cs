@@ -144,6 +144,8 @@ namespace OptionsCalcWPF
                 ConnectionManager.OnPosition += DataManager.UpdatePosition;
                 ConnectionManager.OnConnected += new Action<string>(ConnectionManager_OnConnected);
                 ConnectionManager.OnError += new Action<string>(ConnectionManager_OnError);
+                ConnectionManager.OnNewAccount+=DataManager.AddAccount;
+                ConnectionManager.OnNewPosition += DataManager.AddPosition;
 
                 dgrPortfolios.ItemsSource = lstPortfolios;
                 //dgrODesk.ItemsSource = lstInstruments;
@@ -151,7 +153,7 @@ namespace OptionsCalcWPF
                 dgrDesc.ItemsSource = lstDesc;
                 
                 comboBoxBaseContract.ItemsSource = listBaseContract;
-                
+                comboBoxBaseContract.SelectionChanged += new SelectionChangedEventHandler(comboBoxBaseContract_SelectionChanged);
                 
             }
             catch (Exception exp)
@@ -197,10 +199,10 @@ namespace OptionsCalcWPF
         {
             try
             {
-                
+                if (comboBoxBaseContract.SelectedItem == null) return;
                 var ind = comboBoxBaseContract.SelectedIndex;
                 
-                if (ind!=-1 && ind!=0)
+                if (ind!=-1)
                 {
                     var basec = comboBoxBaseContract.SelectedItem.ToString();
                     Binding bind = new Binding();

@@ -32,11 +32,12 @@
                         <DataGrid.Columns>
                             <DataGridTextColumn Binding="{Binding Account, Mode=OneWay}" Header="Account"/>
                             <DataGridTextColumn Binding="{Binding BaseCode, Mode=OneWay}" Header="BaseContract"/>
-                            <DataGridTextColumn Binding="{Binding Delta, StringFormat=\{0:F4\}, Mode=OneWay}" Header="Delta"/>
-                            <DataGridTextColumn Binding="{Binding Gamma, StringFormat=\{0:F4\}, Mode=OneWay}" Header="Gamma"/>
-                            <DataGridTextColumn Binding="{Binding Vega, StringFormat=\{0:F4\}, Mode=OneWay}" Header="Vega"/>
-                            <DataGridTextColumn Binding="{Binding Thetha, StringFormat=\{0:F4\}, Mode=OneWay}" Header="Thetha"/>
-                            <DataGridTextColumn Binding="{Binding Rho, StringFormat=\{0:F4\}, Mode=OneWay}" Header="Rho"/>
+                            <DataGridTextColumn Binding="{Binding Delta, StringFormat=\{0:F2\}, Mode=OneWay}" Header="Delta"/>
+                            <DataGridTextColumn Binding="{Binding Gamma, StringFormat=\{0:F6\}, Mode=OneWay}" Header="Gamma"/>
+                            <DataGridTextColumn Binding="{Binding Vega, StringFormat=\{0:F2\}, Mode=OneWay}" Header="Vega"/>
+                            <DataGridTextColumn Binding="{Binding Thetha, StringFormat=\{0:F2\}, Mode=OneWay}" Header="Thetha"/>
+                            <DataGridTextColumn Binding="{Binding Rho, StringFormat=\{0:F2\}, Mode=OneWay}" Header="Rho"/>
+                            <DataGridTextColumn Binding="{Binding VM, StringFormat=\{0:F2\}, Mode=OneWay}" Header="VarMargin"/>
                         </DataGrid.Columns>
                     </DataGrid>
                 </StackPanel>
@@ -48,7 +49,7 @@
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
                     <Label Grid.Row="0" Content="Base Contract" HorizontalAlignment="Left" />
-                    <ComboBox Name="comboBoxBaseContract" IsReadOnly="True" IsSynchronizedWithCurrentItem="True" HorizontalAlignment="Left" Margin="83,0,0,0" Width="99" ItemsSource="{Binding Source=listBaseContract}" SelectionChanged="comboBoxBaseContract_SelectionChanged" />
+                    <ComboBox Name="comboBoxBaseContract" IsReadOnly="True" IsSynchronizedWithCurrentItem="True" HorizontalAlignment="Left" Margin="83,0,0,0" Width="99" ItemsSource="{Binding Source=listBaseContract}" />
                     <Label Content="Maturity Date" Margin="188,2,0,214" Width="83" Grid.RowSpan="2" HorizontalAlignment="Left" />
                     <ComboBox Name="comboBoxMatDate" IsSynchronizedWithCurrentItem="True" Margin="277,0,202,0" Width="129" HorizontalAlignment="Left" />
                     <Button Name="btnRefreshDesc" Content="Show" HorizontalAlignment="Left" Margin="460,-1,0,1" Width="62" Click="btnRefreshDesc_Click" />
