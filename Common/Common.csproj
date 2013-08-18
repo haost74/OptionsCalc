@@ -81,12 +81,6 @@
     <Compile Include="Quant.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ZQMTest\QuikConnectinManager.csproj">
-      <Project>{0497946F-ED8E-4779-9AFA-A7655415A1E2}</Project>
-      <Name>QuikConnectinManager</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <Content Include="NLog.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

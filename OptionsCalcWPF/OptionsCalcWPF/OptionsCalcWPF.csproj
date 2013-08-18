@@ -110,10 +110,6 @@
       <Project>{B8978022-64B6-457B-864E-F105421291D6}</Project>
       <Name>Common</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\ZQMTest\QuikConnectinManager.csproj">
-      <Project>{0497946F-ED8E-4779-9AFA-A7655415A1E2}</Project>
-      <Name>QuikConnectinManager</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
